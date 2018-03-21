@@ -1,21 +1,64 @@
+import platform
 from flask import Flask
 import json
 import sqlite3
+import pymysql
 import feedparser
 import requests
 import urllib.request
 
 app = Flask(__name__)
 
-sql3Conn = sqlite3.connect(r"D:/Source/Repos/Comtop/Comtop.YTH/Comtop.YTH.App/bin/Debug/DB/avmt.db")
-c = sql3Conn.cursor()
-print("Opened database successfully")
-cursor = c.execute("select * from dm_function_location where BUREAU_CODE=? limit 100", ('0306',))
-functionLocations = [{ 'id':r[0], 'flName':r[2] } for r in cursor]
-print(json.dumps(functionLocations,ensure_ascii=False,indent=2))
+curOs = platform.system()
+print('current os is '+curOs)
+curRealse = platform.release()
+print('current release is '+curRealse)
+if curOs == "Darwin":
+    sql3path = '/Users/Peizhong/Downloads/avmt.db'
+else:
+    sql3path = 'D:/Source/Repos/Comtop/Comtop.YTH/Comtop.YTH.App/bin/Debug/DB/avmt.db'
 
-print('Operation done successfully')
+sql3Conn = sqlite3.connect(sql3path)
+sql3Cur = sql3Conn.cursor()
+print("Opened sqlite database successfully")
+
+mysqlConn = pymysql.connect('193.112.41.28', 'root', 'mypass', 'MYDEV')
+mysqlCur = mysqlConn.cursor()
+print("Opened mariadb database successfully")
+
+
+def tupleToString(t):
+    if(len(t) < 1):
+        return '()'
+    res = ''
+    for i in t:
+        if i == None:
+            res += 'null, '
+        else:
+            res += "'%s', " % str(i).replace('\\', '/')
+    return res[:-2]
+
+
+table_toTrans = ('DM_FUNCTION_LOCATION', 'DM_DEVICE',
+                 'DM_FL_ASSET', 'DM_CLASSIFY', 'DM_BASEINFO_CONFIG', 'DM_TECHPARAM')
+
+for table in table_toTrans:
+    sourceSQL = 'select * from %s' % table
+    print('doing %s' % sourceSQL)
+    cursor = sql3Cur.execute(sourceSQL)
+    for row in cursor:
+        replaceSQL = 'replace into %s VALUES(%s) ' % (table, tupleToString(
+            row))
+        mysqlCur.execute(replaceSQL)
+    mysqlConn.commit()
+    print('done table %s' % table)
+#functionLocations = [{'id': r[0], 'flName':r[2]} for r in cursor]
+#print(json.dumps(functionLocations, ensure_ascii=False, indent=2))
+
+
 sql3Conn.close()
+mysqlConn.close()
+print('Operation done successfully')
 
 
 feed = feedparser.parse(
