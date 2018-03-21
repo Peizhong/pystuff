@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/Users/Peizhong/Source/py/venv/bin/python3"
+    //"python.pythonPath": "/Users/Peizhong/Source/py/venv/bin/python3"
+    "python.pythonPath": "${workspaceFolder}\\venv\\Scripts\\python.exe"
 }

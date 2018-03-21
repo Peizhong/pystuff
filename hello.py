@@ -1,10 +1,22 @@
+from flask import Flask
+import json
+import sqlite3
 import feedparser
 import requests
 import urllib.request
 
-from flask import Flask
-
 app = Flask(__name__)
+
+sql3Conn = sqlite3.connect(r"D:/Source/Repos/Comtop/Comtop.YTH/Comtop.YTH.App/bin/Debug/DB/avmt.db")
+c = sql3Conn.cursor()
+print("Opened database successfully")
+cursor = c.execute("select * from dm_function_location where BUREAU_CODE=? limit 100", ('0306',))
+functionLocations = [{ 'id':r[0], 'flName':r[2] } for r in cursor]
+print(json.dumps(functionLocations,ensure_ascii=False,indent=2))
+
+print('Operation done successfully')
+sql3Conn.close()
+
 
 feed = feedparser.parse(
     'https://www.howstuffworks.com/podcasts/stuff-you-should-know.rss')
