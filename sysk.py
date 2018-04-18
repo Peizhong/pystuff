@@ -9,7 +9,7 @@ import urllib.request
 def fetchRss(rss):
     source = feedparser.parse(rss)
     feeds = [{'Title': e.title, 'UpdateTime': e.updated,
-              'Summary': e.summary, 'Link': e.link} for e in source.entries]
+              'Summary': e.summary, 'Link': e.id} for e in source.entries]
     # byd = sorted(feeds, key=lambda s: s['UpdateTime'], reverse=True)
     # return byd[:5]
     return feeds[:5]
@@ -56,6 +56,7 @@ def downloadSksy(rss, localpath):
         encode = replace_invalid_filename_char(rss['Title'])
         filepath = '%s/%s.mp3' % (localpath, encode)
         print("start download to %s" % (filepath))
+        print("      from %s" % (rss['Link']))
         f = urllib.request.urlopen(rss['Link'])
         data = f.read()
         with open(filepath, "wb") as code:
@@ -74,7 +75,7 @@ def main(downloadpath, autodown=True, hour=0):
         lastcheckDate = -1
         while True:
             localtime = time.localtime(time.time())
-            print("check pocast at %02d:%02d" %
+            print("run job at %02d:%02d" %
                   (localtime.tm_hour, localtime.tm_min))
             # 每天只下载一次
             if(localtime.tm_yday == lastcheckDate):
@@ -83,10 +84,11 @@ def main(downloadpath, autodown=True, hour=0):
                 continue
             # 每天只在指定的时间下载文件，过了就不管
             if (localtime.tm_hour == hour):
-                print('time to download new pocast')
+                print('time to check new pocast')
                 # feeds = fetchRss('http://www.ifanr.com/feed')
                 feeds = fetchRss(
                     'https://feeds.megaphone.fm/stuffyoushouldknow')
+                #feeds = fetchRss('http://www.ximalaya.com/album/269179.xml')
                 print("recive %s pocasts" % (len(feeds)))
                 newfeeds = whichNew(feeds, downloadpath)
                 newfeedsLen = len(newfeeds)
