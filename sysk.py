@@ -7,9 +7,19 @@ import urllib.request
 
 
 def fetchRss(rss):
+    feeds = []
     source = feedparser.parse(rss)
-    feeds = [{'Title': e.title, 'UpdateTime': e.updated,
-              'Summary': e.summary, 'Link': e.id} for e in source.entries]
+    for s in source.entries:
+        f = {
+            'Title': s.title,
+            'UpdateTime': s.updated,
+            'Summary': s.summary,
+        }
+        for l in s.links:
+            if (l['type'] == 'audio/mpeg'):
+                f['Link'] = l['href']
+                break
+        feeds.append(f)
     # byd = sorted(feeds, key=lambda s: s['UpdateTime'], reverse=True)
     # return byd[:5]
     return feeds[:5]
@@ -104,6 +114,8 @@ def main(downloadpath, autodown=True, hour=0):
                     continue
                 if(allLoaded == False):
                     time.sleep(300)
+            else:
+                time.sleep(600)
     else:
         print('hello, fetching new pocasts....')
         feeds = fetchRss('http://www.ifanr.com/feed')
@@ -141,4 +153,4 @@ elif curOs == "Linux":
 else:
     downloadpath = r'E:/Downloads'
 
-main(autodown=True, hour=10, downloadpath=downloadpath)
+main(autodown=True, hour=17, downloadpath=downloadpath)
