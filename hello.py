@@ -9,6 +9,59 @@ import urllib.request
 
 app = Flask(__name__)
 
+name = 'wang peizhong'
+FName = name.title()
+
+wpz = {
+    'firstName': 'peizhong',
+    'lastName': 'wang',
+    'age': 16,
+    'ageStr': '16'
+}
+
+actage = int(wpz['ageStr'])
+count = 0
+while True:
+    city = input('whick city do you live?')
+    if(city == 'beijing'):
+        continue
+    count += 1
+    if(city == 'shenzhen'):
+        print('same, woo')
+        break
+
+
+for key, value in wpz.items():
+    if (str(key).lower() == 'firstname'):
+        print('first name is ' + value)
+    elif (str(key).lower() == 'lastname'):
+        print('last name is '+value)
+aliens = []
+
+prompt = "If you tell us who you are, we can personalize the messages you see."
+prompt += "\nWhat is your first name? "
+name = input(prompt)
+print("\nHello, " + name + "!")
+
+for num in range(30):
+    newa = {'name': 'miomi', 'id': num, 'nini': str(num)}
+    aliens.append(newa)
+
+for a in aliens[0:3]:
+    if (a['id'] % 2 == 1):
+        a['name'] = 'odd'
+    else:
+        a['name'] = 'eve'
+
+for k in sorted(wpz.keys()):
+    print(k)
+
+for v in wpz.values():
+    print(v)
+
+animal = ['cat', 'mouse', 'pig', 'dog']
+animal.remove('cat')
+
 curOs = platform.system()
 print('current os is '+curOs)
 curRealse = platform.release()
@@ -25,6 +78,14 @@ print("Opened sqlite database successfully")
 mysqlConn = pymysql.connect('193.112.41.28', 'root', 'mypass', 'MYDEV')
 mysqlCur = mysqlConn.cursor()
 print("Opened mariadb database successfully")
+
+
+def yourname(firstName, lastName, middleName=''):
+    print(firstName+' '+lastName)
+    return (firstName+' '+lastName).title()
+
+
+yourname(lastName='wang', firstName='wang')
 
 
 def tupleToString(t):
