@@ -92,8 +92,8 @@ def main(downloadpath, autodown=True, hour=0):
                 print('%s job is finished' % (time.asctime(localtime)))
                 time.sleep(3600)
                 continue
-            # 每天只在指定的时间下载文件，过了就不管
-            if (localtime.tm_hour == hour):
+            # 除了第一次，每天只在指定的时间下载文件，过了就不管
+            if (lastcheckDate == -1 or localtime.tm_hour == hour):
                 print('time to check new pocast')
                 # feeds = fetchRss('http://www.ifanr.com/feed')
                 feeds = fetchRss(
@@ -149,8 +149,8 @@ print('current release is '+curRealse)
 if curOs == "Darwin":
     downloadpath = r'/Users/Peizhong/Downloads'
 elif curOs == "Linux":
-    downloadpath = r'/home/Peizhong/Downloads'
+    downloadpath = r'/home/peizhong/downloads'
 else:
     downloadpath = r'E:/Downloads'
 
-main(autodown=True, hour=17, downloadpath=downloadpath)
+main(autodown=True, hour=1, downloadpath=downloadpath)
