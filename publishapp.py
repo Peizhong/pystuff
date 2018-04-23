@@ -1,7 +1,11 @@
 import os
 import shutil
 import sys
+import re
 import xml.etree.ElementTree as ET
+
+projectPath = r'D:\Source\Repos\Comtop\Comtop.YTH\Comtop.YTH.App'
+buildPath = r'D:\Source\Repos\Comtop\Comtop.YTH\Comtop.YTH.App\bin\Release'
 
 
 def get_desktop():
@@ -16,7 +20,21 @@ def lastestFramework():
             if os.path.exists(fullpath):
                 return fullpath
     print('no framework found')
-    return ''
+    sys.exit()
+
+
+def buildProject():
+    print("now building project...")
+    devenv = r'"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/IDE/devenv.com"'
+    cmd = r'%s D:/Source/Repos/Comtop/Comtop.YTH.sln /rebuild "Release" /Project Comtop.YTH.App' % (
+        devenv)
+    p = os.popen(cmd)
+    res = p.read()
+    if "0 failed" in res:
+        return True
+    else:
+        print(res)
+        sys.exit()
 
 
 def getReleaseFolder(version):
@@ -67,33 +85,44 @@ def getCopyFileList(configPath):
     return files
 
 
-def copyBuidFile(releasePath):
-    buildPath = 'D:/Source/Repos/avmt/debug/'
-    buildPath = 'C:/Users/wxyz/Source/avmt/Comtop.YTH//Comtop.YTH.App/bin/Release'
+def copyBuildFile(releasePath):
     configPath = os.path.join(buildPath, 'UpdateConfigV2.xml')
     for name in getCopyFileList(configPath):
-        src = os.path.join(buildPath, name)
-        if os.path.exists(src):
-            dst = os.path.join(releasePath, name)
-            shutil.copyfile(src, dst)
-        else:
-            print("not found "+src)
+        ext = os.path.splitext(name)[1]
+        if ext in ['.dll', '.xml', '.exe', '.config']:
+            src = os.path.join(buildPath, name)
+            if os.path.exists(src):
+                dst = os.path.join(releasePath, name)
+                shutil.copyfile(src, dst)
+            else:
+                print("not found "+src)
+        elif ext in ['.txt', '.db']:
+            # 脚本：拷贝工程目录的db和脚本?? 名字不一样。。
+            v = re.match('\d{1,2}\.\d{2}', name)
+            src = os.path.join(projectPath, name)
+            if os.path.exists(src):
+                dst = os.path.join(releasePath, name)
+                shutil.copyfile(src, dst)
+            else:
+                print("not found "+src)
 
 
 def packFile(packName, rootPath):
-    shutil.make_archive(packName, 'zip', rootPath)
-    shutil.rmtree(rootPath)
+    try:
+        shutil.make_archive(packName, 'zip', rootPath)
+        shutil.rmtree(rootPath)
+        print('complete: %s.zip' % (os.path.join(rootPath, packName)))
+    except Exception as e:
+        print(e)
+        sys.exit()
 
+
+cmd = buildProject()
 
 pubilcVersion = input('input the publish version: ')
 
 releaseInfo = getReleaseFolder(pubilcVersion)
 
-copyBuidFile(releaseInfo['workFolder'])
+copyBuildFile(releaseInfo['workFolder'])
 
 packFile(releaseInfo['folder'], releaseInfo['folder'])
-
-framepath = lastestFramework()
-p = os.popen('%s /ver' % (framepath))
-
-print(p.read())
