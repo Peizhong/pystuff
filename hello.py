@@ -1,13 +1,7 @@
 import platform
-from flask import Flask
 import json
 import sqlite3
 import pymysql
-import feedparser
-import requests
-import urllib.request
-
-app = Flask(__name__)
 
 name = 'wang peizhong'
 FName = name.title()
@@ -19,10 +13,71 @@ wpz = {
     'ageStr': '16'
 }
 
+
+def make_pizza(size, *toppings):
+    "任意数量的实参"
+    print('hello '+size)
+    for top in toppings:
+        print('- '+top)
+
+
+def build_profile(name, **info):
+    "任意数量的键值对"
+    profile = {}
+    profile['name'] = name
+    for key, value in info.items():
+        profile[key] = value
+    return profile
+
+
+make_pizza('nmii', 'aa', 'aa', 'aa')
+
+wpz = build_profile(name='wang peizhong', age=27, sex='male')
+print(wpz)
+
+
+class ClassifyVO():
+    def __init__(self, id, name="", fullName=""):
+        self.Id = id
+        self.Name = name
+        self.FullName = fullName
+
+
+class FunctionLocationVO():
+    "dm_function_location"
+
+    def __init__(self, name, classifyId, parentId):
+        "构造函数"
+        self.FlName = name
+        self.ClassifyId = classifyId
+        self.ParentId = parentId
+        self.ClassifyProperty = ClassifyVO(classifyId)
+
+    def Copy(self):
+        print("copy self " + self.FlName)
+
+    def GetObjectType(self):
+        return 1
+
+
+class SubStationFunctionLocationVO(FunctionLocationVO):
+    def __init__(self):
+        # super: 父类(超类)和子类关联
+        super().__init__("SubStation", "2", "")
+
+    def GetObjectType(self):
+        return 2
+
+
+fl1 = FunctionLocationVO("共同", "15048", 1)
+fl1.Copy()
+fl2 = SubStationFunctionLocationVO()
+c = fl2.ClassifyProperty
+
 actage = int(wpz['ageStr'])
 count = 0
 while True:
-    city = input('whick city do you live?')
+    city = input('which city do you live?')
     if(city == 'beijing'):
         continue
     count += 1

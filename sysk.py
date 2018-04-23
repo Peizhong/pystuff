@@ -4,6 +4,9 @@ import feedparser
 import os
 import sys
 import urllib.request
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def fetchRss(rss):
