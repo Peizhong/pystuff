@@ -2,6 +2,7 @@ import platform
 import json
 import sqlite3
 import pymysql
+import json
 
 name = 'wang peizhong'
 FName = name.title()
@@ -12,6 +13,8 @@ wpz = {
     'age': 16,
     'ageStr': '16'
 }
+
+js = json.dumps(wpz)
 
 
 def make_pizza(size, *toppings):
@@ -73,6 +76,7 @@ fl1 = FunctionLocationVO("共同", "15048", 1)
 fl1.Copy()
 fl2 = SubStationFunctionLocationVO()
 c = fl2.ClassifyProperty
+
 
 actage = int(wpz['ageStr'])
 count = 0
@@ -168,8 +172,8 @@ for table in table_toTrans:
         mysqlCur.execute(replaceSQL)
     mysqlConn.commit()
     print('done table %s' % table)
-#functionLocations = [{'id': r[0], 'flName':r[2]} for r in cursor]
-#print(json.dumps(functionLocations, ensure_ascii=False, indent=2))
+# functionLocations = [{'id': r[0], 'flName':r[2]} for r in cursor]
+# print(json.dumps(functionLocations, ensure_ascii=False, indent=2))
 
 
 sql3Conn.close()
@@ -179,7 +183,7 @@ print('Operation done successfully')
 
 feed = feedparser.parse(
     'https://www.howstuffworks.com/podcasts/stuff-you-should-know.rss')
-#feed = feedparser.parse('http://www.ifanr.com/feed')
+# feed = feedparser.parse('http://www.ifanr.com/feed')
 
 
 def get_real_url(url):

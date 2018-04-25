@@ -6,7 +6,10 @@ import sys
 import urllib.request
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+LOG_FORMAT = "%(asctime)s - %(levelname)s - :%(lineno)d - %(message)s"
+DATE_FORMAT = "%m-%d-%Y %H:%M:%S"
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT,
+                    filename="sksy.log")
 
 
 def fetchRss(rss):
