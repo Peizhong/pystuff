@@ -101,3 +101,6 @@ djg/
 
 # mypy
 .mypy_cache/
+
+# database
+db.sqlite3

@@ -25,7 +25,10 @@ SECRET_KEY = 'aew*z7w3_20(hi1e&2_kt(g!wq7_+ph9w!5=!6a1(%zw%14kpp'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    # tencent cloud
+    '193.112.41.28'
+]
 
 
 # Application definition
