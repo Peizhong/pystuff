@@ -3,7 +3,7 @@ import time
 import feedparser
 import os
 import sys
-import urllib.request
+from urllib import request
 import logging
 
 LOG_FORMAT = "%(asctime)s - %(levelname)s - :%(lineno)d - %(message)s"
@@ -73,8 +73,12 @@ def downloadSksy(rss, localpath):
         filepath = '%s/%s.mp3' % (localpath, encode)
         print("start download to %s" % (filepath))
         print("      from %s" % (rss['Link']))
-        f = urllib.request.urlopen(rss['Link'])
-        data = f.read()
+        header = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
+        }
+        req = request.Request(rss['Link'], headers=header)
+        page = request.urlopen(req)
+        data = page.read()
         with open(filepath, "wb") as code:
             code.write(data)
         result = True
