@@ -1,0 +1,21 @@
+<h1>Topic</h1>
+{% if topicList %}
+    <ul>
+    {% for t in topicList %}
+        <li><a href="{% url 'learning_logs:topic' t.id %}">{{ t.topic }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No topic are available.</p>
+{% endif %}
+<br/>
+<h1>Entry</h1>
+{% if entryList %}
+    <ul>
+    {% for e in entryList %}
+        <li><a href="{% url 'learning_logs:entry' e.id %}">{{ e.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No entry are available.</p>
+{% endif %}

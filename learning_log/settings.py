@@ -26,6 +26,7 @@ SECRET_KEY = 'aew*z7w3_20(hi1e&2_kt(g!wq7_+ph9w!5=!6a1(%zw%14kpp'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'localhost',
     # tencent cloud
     '193.112.41.28'
 ]
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'learning_logs'
+    'learning_logs',
+    'mylibrary'
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,10 @@
+<h1>hello this is my library</h1>
+{% if files %}
+    <ul>
+    {% for f in files %}
+        <li><a href="{% url 'mylibrary:player' f %}">{{ f }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No files are available.</p>
+{% endif %}

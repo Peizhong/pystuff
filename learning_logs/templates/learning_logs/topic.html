@@ -1,0 +1,10 @@
+{{topic}}
+{% if entryList %}
+    <ul>
+    {% for e in entryList %}
+        <li><a href="/learning_logs/entry/{{e.id}}/">{{ e.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No entry are available.</p>
+{% endif %}
