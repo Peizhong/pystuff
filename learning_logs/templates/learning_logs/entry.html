@@ -1,6 +1,10 @@
-<h1>{{entry.title}}</h1>
-<br/>
-{{entry.date_add}}
-<li><a href="{% url 'learning_logs:topic' entry.topic.id %}">{{ entry.topic.topic }}</a></li>
-<br/>
-<h3>{{entry.text}}</h3>
+{% extends 'learning_logs/base.html' %}
+{% block content %}
+<p><a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a></p>
+<p>Edit entry:</p>
+<form action="{% url 'learning_logs:entry' entry.id %}" method='post'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button name="submit">save changes</button>
+</form>
+{% endblock content %}

@@ -1,10 +1,20 @@
-{{topic}}
+{% extends 'learning_logs/base.html' %}
+{% block content %}
+<p>当前主题：{{topic}}</p>
+<p><a href="{% url 'learning_logs:new_entry' topic.id %}">添加新的文章</a></p>
+
 {% if entryList %}
     <ul>
     {% for e in entryList %}
-        <li><a href="/learning_logs/entry/{{e.id}}/">{{ e.title }}</a></li>
+        <li>
+            <h3>{{ e.title }}</h3>
+            <a href="/learning_logs/entry/{{e.id}}/"> ✏️ 编辑</a>
+            <p>{{ e.date_add|date:'M d, Y H:i' }}</p>
+            <p>{{ e.text|linebreaks }}</p>
+        </li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>No entry are available.</p>
+    <p>没有文章，写一个吧</p>
 {% endif %}
+{% endblock content %}

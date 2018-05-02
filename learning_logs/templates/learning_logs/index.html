@@ -1,8 +1,12 @@
+{% extends 'learning_logs/base.html' %}
+{% block content %}
 <h1>Topic</h1>
 {% if topicList %}
     <ul>
     {% for t in topicList %}
         <li><a href="{% url 'learning_logs:topic' t.id %}">{{ t.topic }}</a></li>
+        {% empty %}
+        <li>还没有主题，添加一个吧</li>
     {% endfor %}
     </ul>
 {% else %}
@@ -14,8 +18,11 @@
     <ul>
     {% for e in entryList %}
         <li><a href="{% url 'learning_logs:entry' e.id %}">{{ e.title }}</a></li>
+        {% empty %}
+        <li>还没有文章，添加一个吧</li>
     {% endfor %}
     </ul>
 {% else %}
     <p>No entry are available.</p>
 {% endif %}
+{% endblock content %}
