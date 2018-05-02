@@ -81,6 +81,8 @@ WSGI_APPLICATION = 'learning_log.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
+    # python manage.py makemigrations learning_logs
+    # python manage.py migrate
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MYDEV',
