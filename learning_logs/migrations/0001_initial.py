@@ -14,9 +14,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Topic',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=200)),
-                ('txt', models.CharField(max_length=65536)),
+                ('txt', models.CharField(max_length=21844)),
                 ('date_add', models.DateTimeField(auto_now_add=True)),
             ],
         ),
