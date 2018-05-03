@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -6,6 +7,7 @@ from django.db import models
 class Topic(models.Model):
     topic = models.CharField(max_length=200)
     date_add = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         "储存额外的信息，用entries表示多个条目"
@@ -19,6 +21,7 @@ class Topic(models.Model):
 class Entry(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
+    link = models.CharField(max_length=1024)
     text = models.TextField()
     date_add = models.DateTimeField(auto_now_add=True)
 
