@@ -7,14 +7,14 @@ from .models import Topic, Entry
 from .forms import TopicForm, EntryForm
 
 
+@login_required
 def index(request):
-    #topicList = Topic.objects.filter(owner=request.user).order_by('date_add')
-    topicList = Topic.objects.order_by('date_add')
-    topicOutput = ', '.join([t.topic for t in topicList])
-    print('topic: '+topicOutput)
-    entryList = Entry.objects.order_by('-date_add')[:5]
-    entryOutput = ', '.join([e.title for e in entryList])
-    print('entry: '+entryOutput)
+    topicList = Topic.objects.filter(owner=request.user).order_by('date_add')
+    #topicList = Topic.objects.order_by('date_add')
+    entryList = []
+    for topic in topicList:
+        for e in topic.entry_set.order_by('-date_add'):
+            entryList.append(e)
     context = {
         'topicList': topicList,
         'entryList': entryList

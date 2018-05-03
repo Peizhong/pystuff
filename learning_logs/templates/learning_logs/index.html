@@ -10,10 +10,10 @@
         <li>还没有主题，添加一个吧</li>
     {% endfor %}
     </ul>
-    <p><a href="{% url 'learning_logs:new_topic' %}">添加新的主题</a></p>
 {% else %}
     <p>No topic are available.</p>
 {% endif %}
+<p><a href="{% url 'learning_logs:new_topic' %}">添加新的主题</a></p>
 <br/>
 <h1>Entry</h1>
 {% if entryList %}

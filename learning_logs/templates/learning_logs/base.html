@@ -1,14 +1,28 @@
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'learning_logs/style.css' %}" />
+{% load bootstrap3 %}
 
-<p>
-    <a href="{% url 'learning_logs:index' %}"> 📓 笔记</a>
-    {% if user.is_authenticated %}
-        当前用户: {{ user.username }}
-        <a href="{% url 'users:logout' %}">登出</a>
-    {% else %}
-        <a href="{% url 'users:register' %}">注册</a>
-        <a href="{% url 'users:login' %}">登录</a>
-    {% endif %}
-</p>
-{% block content %}{% endblock content %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Learning Log</title>    
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'learning_logs/style.css' %}" />
+</head>
+<body>
+    <p>
+        <a href="{% url 'learning_logs:index' %}"> 📓 笔记</a>
+        {% if user.is_authenticated %}
+            当前用户: {{ user.username }}
+            <a href="{% url 'users:logout' %}">登出</a>
+        {% else %}
+            <a href="{% url 'users:register' %}">注册</a>
+            <a href="{% url 'users:login' %}">登录</a>
+        {% endif %}
+    </p>
+    {% block content %}{% endblock content %}
+</body>
