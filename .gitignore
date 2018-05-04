@@ -105,3 +105,6 @@ djg/
 
 # database
 db.sqlite3
+
+# localconfig
+localconfig.json
