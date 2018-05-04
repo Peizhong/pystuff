@@ -1,11 +1,16 @@
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
+
+import mytoolkit
+
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'learning_log.settings')
 
-app = Celery('learning_log', broker='redis://193.112.41.28:6379',
-             backend='redis://193.112.41.28:6379')
+host = mytoolkit.readConfig()['host']
+
+app = Celery('learning_log', broker='redis://%s:6379' % host,
+             backend='redis://%s:6379' % host)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

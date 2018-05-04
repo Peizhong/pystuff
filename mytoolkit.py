@@ -1,5 +1,6 @@
 import os
 import platform
+import socket
 import json
 
 
@@ -23,29 +24,41 @@ def readConfig():
     if os.path.exists(configpath):
         with open(configpath, 'r') as read_f:
             localconfig = json.load(read_f)
+            if 'host' not in localconfig:
+                localconfig['host'] = getHost()
             if 'database' not in localconfig:
-                localconfig['database'] = databaseConfig()
+                localconfig['database'] = databaseConfig(localconfig['host'])
     else:
+        host = getHost()
         localconfig = {
-            'database': databaseConfig()
+            'host': host,
+            'database': databaseConfig(host)
         }
     # 不管有没有改数据，都写一遍
     with open(configpath, "w") as write_f:
         json.dump(localconfig, write_f)
-    print('using database config: ')
-    print(localconfig['database'])
+    print('using config: ')
+    print(localconfig)
     return localconfig
 
 
-def databaseConfig(dbflag=1):
+def getHost():
+    ip = socket.gethostbyname(socket.gethostname())
+    #addrs = socket.getaddrinfo(socket.gethostname(), None)
+    host = input("input host's ip (default is %s): " % ip)
+    if not host:
+        return ip
+    return host
+
+
+def databaseConfig(host, dbflag=1):
     if dbflag == 2:
         return sqliteConfig()
     else:
-        return mysqlConfig()
+        return mysqlConfig(host)
 
 
-def mysqlConfig():
-    host = input("input mysql's host: ")
+def mysqlConfig(host):
     username = input("input mysql's user name: ")
     password = input("input mysql's password: ")
     return {

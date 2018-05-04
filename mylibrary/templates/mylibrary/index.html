@@ -2,15 +2,16 @@
 
 {% block content %}
     <h1>hello this is my library</h1>
-    {% if documents %}
-        <ul>
-        {% for f in documents %}
-            <li><a href="{% url 'mylibrary:player' f %}">{{ f }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No files are available.</p>
-    {% endif %}   
+    <div>
+        {% if documents %}
+            <ul class="list-group">
+                {% for f in documents %}
+                    <li class="list-group-item"><a href="{% url 'mylibrary:player' f %}">{{ f }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No files are available.</p>
+        {% endif %}   
     </div>
     <form action="{% url 'mylibrary:index' %}" method='post' enctype="multipart/form-data">
         {% csrf_token %}
@@ -20,6 +21,6 @@
             {{ form.docfile.errors }}
             {{ form.docfile }}
         </p>
-        <button name='submit'>上传文件</button>
+        <button type="button" class="btn btn-primary" name='submit'>上传文件</button>
     </form>
 {% endblock content %}

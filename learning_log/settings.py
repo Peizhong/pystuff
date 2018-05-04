@@ -14,6 +14,8 @@ import os
 
 import mytoolkit
 
+localConfig = mytoolkit.readConfig()
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,8 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
-    # tencent cloud
-    '193.112.41.28'
+    localConfig['host']
 ]
 
 
@@ -44,7 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bootstrap3',
     'learning_logs',
     'users',
     'mylibrary'
@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'learning_log.wsgi.application'
 DATABASES = {
     # python manage.py makemigrations learning_logs
     # python manage.py migrate
-    'default': mytoolkit.readConfig()['database']
+    'default': localConfig['database']
 }
 
 
@@ -131,11 +131,6 @@ STATIC_URL = '/static/'
 
 # 我的设置
 LOGIN_URL = '/users/login/'
-
-# django-bootstrap3的设置
-BOOTSTRAP3 = {
-    # 'include_jquery': True,
-}
 
 #CELERY_RESULT_BACKEND = 'redis://193.112.41.28:6379'
 #CELERY_RESULT_BACKEND = 'django-db'
