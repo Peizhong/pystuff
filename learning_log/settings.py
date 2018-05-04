@@ -136,3 +136,7 @@ LOGIN_URL = '/users/login/'
 BOOTSTRAP3 = {
     # 'include_jquery': True,
 }
+
+#CELERY_RESULT_BACKEND = 'redis://193.112.41.28:6379'
+#CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TIMEZONE = 'Asia/Shanghai'

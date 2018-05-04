@@ -8,10 +8,14 @@ from .models import Document
 from .forms import DocumentForm
 
 from . import filehelper
+from . import tasks
 
 
 @login_required
 def index(request):
+    res = tasks.add.delay(4, 3)
+    print(res.ready())
+    x = res.get()
     # handle file upload
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
