@@ -37,7 +37,7 @@ def index(request):
 
 def player(request, file_name):
     context = {
-        'file_server': 'http://192.168.3.172/downloads/',
+        'file_server': filehelper.getFileServer(),
         'file_name': file_name
     }
     return render(request, 'mylibrary/player.html', context)

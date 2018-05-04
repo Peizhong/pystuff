@@ -16,6 +16,20 @@ def getWorkspace():
     return downloadpath
 
 
+def getFileServer():
+    curOs = platform.system()
+    print('current os is '+curOs)
+    curRealse = platform.release()
+    print('current release is '+curRealse)
+    if curOs == "Darwin":
+        downloadpath = r'http://192.168.3.172/downloads/'
+    elif curOs == "Linux":
+        downloadpath = r'http://193.112.41.28/downloads/'
+    else:
+        downloadpath = r'localhost'
+    return downloadpath
+
+
 def findAllFile():
     localpath = getWorkspace()
     supportedFormat = ('.pdf', '.mkv', 'mp3', '.mp4', '.avi')
