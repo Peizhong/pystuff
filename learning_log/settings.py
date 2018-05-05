@@ -14,8 +14,6 @@ import os
 
 import mytoolkit
 
-localConfig = mytoolkit.readConfig()
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -31,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
-    localConfig['host']
+    mytoolkit.queryConfig('host')
 ]
 
 
@@ -45,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
     'learning_logs',
     'users',
     'mylibrary'
@@ -87,7 +86,7 @@ WSGI_APPLICATION = 'learning_log.wsgi.application'
 DATABASES = {
     # python manage.py makemigrations learning_logs
     # python manage.py migrate
-    'default': localConfig['database']
+    'default': mytoolkit.queryConfig('database')
 }
 
 
@@ -115,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 

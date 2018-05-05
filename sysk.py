@@ -2,6 +2,8 @@ import platform
 import time
 import feedparser
 import os
+from atexit import register
+from time import sleep, ctime
 import sys
 from urllib import request
 import logging
@@ -9,7 +11,7 @@ import logging
 LOG_FORMAT = "%(asctime)s - %(levelname)s - :%(lineno)d - %(message)s"
 DATE_FORMAT = "%m-%d-%Y %H:%M:%S"
 logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT,
-                    filename="sksy.log")
+                    filename="logs/sksy.log")
 
 
 def fetchRss(rss):
@@ -89,7 +91,7 @@ def downloadSksy(rss, localpath):
         return result
 
 
-def main(downloadpath, autodown=True, hour=0):
+def startSysk(downloadpath, autodown=True, hour=0):
     if(autodown):
         print("auto download pocast at %02d:00 " % (hour))
         lastcheckDate = -1
@@ -152,15 +154,25 @@ def main(downloadpath, autodown=True, hour=0):
                 print('input value error')
 
 
-curOs = platform.system()
-print('current os is '+curOs)
-curRealse = platform.release()
-print('current release is '+curRealse)
-if curOs == "Darwin":
-    downloadpath = r'/Users/Peizhong/Downloads'
-elif curOs == "Linux":
-    downloadpath = r'/home/peizhong/downloads'
-else:
-    downloadpath = r'E:/Downloads'
+def _main():
+    curOs = platform.system()
+    print('current os is '+curOs)
+    curRealse = platform.release()
+    print('current release is '+curRealse)
+    if curOs == "Darwin":
+        downloadpath = r'/Users/Peizhong/Downloads'
+    elif curOs == "Linux":
+        downloadpath = r'/home/peizhong/downloads'
+    else:
+        downloadpath = r'E:/Downloads'
+    startSysk(autodown=True, hour=1, downloadpath=downloadpath)
 
-main(autodown=True, hour=1, downloadpath=downloadpath)
+
+if __name__ == '__main__':
+    _main()
+
+
+@register
+def _atexit():
+    # 脚本退出前执行这个函数
+    print('script end at '+ctime())

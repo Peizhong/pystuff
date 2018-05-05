@@ -14,8 +14,8 @@ from . import tasks
 @login_required
 def index(request):
     res = tasks.add.delay(4, 3)
+    print('call celery:')
     print(res.ready())
-    x = res.get()
     # handle file upload
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)

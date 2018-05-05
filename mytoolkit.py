@@ -4,6 +4,18 @@ import socket
 import json
 
 
+localconfig = {}
+
+
+def queryConfig(name):
+    global localconfig
+    if not localconfig:
+        localconfig = readConfig()
+    if name in localconfig:
+        return localconfig[name]
+    return ''
+
+
 def getDownloadPath():
     curOs = platform.system()
     print('current os is '+curOs)
@@ -20,30 +32,34 @@ def getDownloadPath():
 
 def readConfig():
     configpath = 'localconfig.json'
-    localconfig = {}
+    config = {}
     if os.path.exists(configpath):
         with open(configpath, 'r') as read_f:
-            localconfig = json.load(read_f)
-            if 'host' not in localconfig:
-                localconfig['host'] = getHost()
-            if 'database' not in localconfig:
-                localconfig['database'] = databaseConfig(localconfig['host'])
+            config = json.load(read_f)
+            if 'host' not in config:
+                config['host'] = getHost()
+            if 'database' not in config:
+                config['database'] = databaseConfig(config['host'])
     else:
         host = getHost()
-        localconfig = {
+        config = {
             'host': host,
             'database': databaseConfig(host)
         }
     # 不管有没有改数据，都写一遍
     with open(configpath, "w") as write_f:
-        json.dump(localconfig, write_f)
+        json.dump(config, write_f)
     print('using config: ')
-    print(localconfig)
-    return localconfig
+    print(config)
+    return config
 
 
 def getHost():
-    ip = socket.gethostbyname(socket.gethostname())
+    #ip = socket.gethostbyname(socket.gethostname())
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
     #addrs = socket.getaddrinfo(socket.gethostname(), None)
     host = input("input host's ip (default is %s): " % ip)
     if not host:
