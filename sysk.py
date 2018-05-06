@@ -2,6 +2,8 @@ import platform
 import time
 import feedparser
 import os
+import socket
+import collections
 from atexit import register
 from time import sleep, ctime
 import sys
@@ -14,29 +16,31 @@ logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT,
                     filename="logs/sksy.log")
 
 
+Pocast = collections.namedtuple(
+    'Pocast', ['Title', 'Summary', 'Link', 'UpdateTime'])
+
+
 def fetchRss(rss):
     feeds = []
     source = feedparser.parse(rss)
     for s in source.entries:
-        f = {
-            'Title': s.title,
-            'UpdateTime': s.updated,
-            'Summary': s.summary,
-        }
+        link = ''
         for l in s.links:
             if (l['type'] == 'audio/mpeg'):
-                f['Link'] = l['href']
+                link = l['href']
                 break
-        feeds.append(f)
+        if not link:
+            continue
+        feeds.append(Pocast(s.title, s.summary, link, s.updated))
     # byd = sorted(feeds, key=lambda s: s['UpdateTime'], reverse=True)
     # return byd[:5]
-    return feeds[:5]
+    return feeds[:3]
 
 
 def replace_invalid_filename_char(filename, replaced_char='_'):
     '''Replace the invalid characaters in the filename with specified characater.
     The default replaced characater is '_'.
-    e.g. 
+    e.g.
     C/C++ -> C_C++
     '''
     valid_filename = filename
@@ -53,7 +57,9 @@ def whichNew(feeds, localpath):
     exfile = []
     for root, dirs, files in os.walk(localpath):
         for name in files:
-            if(name[-4:].lower() == '.mp3'):
+            if '.' not in name:
+                continue
+            if os.path.splitext(name)[1] == '.mp3':
                 exfile.append(name)
         break
     for rs in feeds:
@@ -71,24 +77,38 @@ def whichNew(feeds, localpath):
 def downloadSksy(rss, localpath):
     result = False
     try:
-        encode = replace_invalid_filename_char(rss['Title'])
+        encode = replace_invalid_filename_char(rss.Title)
         filepath = '%s/%s.mp3' % (localpath, encode)
-        print("start download to %s" % (filepath))
-        print("      from %s" % (rss['Link']))
+        logging.info("start download from %s" % (rss.Link))
         header = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
         }
-        req = request.Request(rss['Link'], headers=header)
+        req = request.Request(rss.Link, headers=header)
         page = request.urlopen(req)
         data = page.read()
         with open(filepath, "wb") as code:
             code.write(data)
         result = True
+        # todo 数据库记录
     except Exception as e:
         print(e)
         result = False
     finally:
         return result
+
+
+def syskTask(downloadPath):
+    "给定时任务用的，不用考虑什么时候下载"
+    logging.info('start sysk task')
+    feeds = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
+    print("recive %r pocasts" % len(feeds))
+    newfeeds = whichNew(feeds, downloadPath)
+    newfeedsLen = len(newfeeds)
+    print("found %r new pocasts" % newfeedsLen)
+    if newfeedsLen < 1:
+        return
+    downloadAll = [downloadSksy(nf, downloadPath) for nf in newfeeds]
+    logging.info('sksy task completed')
 
 
 def startSysk(downloadpath, autodown=True, hour=0):
@@ -110,7 +130,7 @@ def startSysk(downloadpath, autodown=True, hour=0):
                 # feeds = fetchRss('http://www.ifanr.com/feed')
                 feeds = fetchRss(
                     'https://feeds.megaphone.fm/stuffyoushouldknow')
-                #feeds = fetchRss('http://www.ximalaya.com/album/269179.xml')
+                # feeds = fetchRss('http://www.ximalaya.com/album/269179.xml')
                 print("recive %s pocasts" % (len(feeds)))
                 newfeeds = whichNew(feeds, downloadpath)
                 newfeedsLen = len(newfeeds)
@@ -162,10 +182,15 @@ def _main():
     if curOs == "Darwin":
         downloadpath = r'/Users/Peizhong/Downloads'
     elif curOs == "Linux":
-        downloadpath = r'/home/peizhong/downloads'
+        hostname = socket.gethostname()
+        if 'raspberry' in hostname:
+            downloadpath = r'/home/pi/downloads'
+        else:
+            downloadpath = r'/home/peizhong/downloads'
     else:
         downloadpath = r'E:/Downloads'
-    startSysk(autodown=True, hour=1, downloadpath=downloadpath)
+    syskTask(downloadpath)
+    # startSysk(autodown=False, hour=1, downloadpath=downloadpath)
 
 
 if __name__ == '__main__':

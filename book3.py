@@ -1,0 +1,84 @@
+#流畅的python: 介绍python3的特性
+import collections
+
+from random import randrange, randint, choice
+
+from math import hypot
+
+# 纸牌类：少数属性，没有方法的对象
+Card = collections.namedtuple('Card', ['rank', 'suit'])
+
+
+class FrenchDesk:
+    "隐式继承了object类，但功能没有继承。通过实现特殊方法，使其能用于标准库"
+    # 特殊方法是给解释器用的，不用调用
+
+    # 公共的类属性
+    # 转换成列表
+    ranks = [str(s) for s in range(2, 10)]+list('JQKA')
+    # 按空格分割
+    suits = 'spades hearts diamonds clubs'.split()
+
+    def __init__(self):
+        self.cards = [Card(rank, suit)
+                      for rank in self.ranks for suit in self.suits]
+
+    # 实现特殊方法来利用Python数据模型
+    def __len__(self):
+        "len(FrenchDesk)"
+        return len(self.cards)
+
+    # 如果没有__contains__, 用迭代搜索
+    def __getitem__(self, position):
+        "处理FrenchDesk[],变成可迭代"
+        return self.cards[position]
+
+
+if __name__ == '__main__':
+    desk = FrenchDesk()
+    print(desk)
+    # choice: 有len,__getitem__
+    print(choice(desk))
+    for card in sorted(desk, key=spades_high):
+        print(card)
+
+l = [1, 3, 5, 7, 9, 11, 13, 15]
+# [x,y,z] z:方向/步长，如果为负，从最后开始
+l1 = l[:6:-2]
+l1 = l[4::-2]
+
+suit_values = dict(spades=3, hearts=2, diamonds=1, clubs=0)
+
+
+def spades_high(card):
+    rank_value = FrenchDesk.ranks.index(card.rank)
+    return rank_value*len(suit_values)+suit_values[card.suit]
+
+
+class Vector():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        "把对象用字符串表示,%r标准输出"
+        return "Vector(%r,%r)" % (self.x, self.y)
+
+    def __abs__(self):
+        return hypot(self.x, self.y)
+
+    def __bool__(self):
+        "bool()先尝试__bool__, 再用__len__"
+        return bool(abs(self))
+
+    def __add__(self, other):
+        x = self.x + other.x
+        y = self.x + other.y
+        return Vector(x, y)
+
+    def __mul__(self, scalar):
+        return Vector(self.x*scalar, self.y*scalar)
+
+# 容器序列：对象的引用：list, tuple, collection.deque
+# 扁平序列：对象的值：str,bytes
+# 可变序列 不可变序列

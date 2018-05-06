@@ -1,5 +1,6 @@
 import os
 import platform
+import socket
 
 
 def getWorkspace():
@@ -10,7 +11,11 @@ def getWorkspace():
     if curOs == "Darwin":
         downloadpath = r'/Users/Peizhong/Downloads'
     elif curOs == "Linux":
-        downloadpath = r'/home/peizhong/downloads'
+        hostname = socket.gethostname()
+        if 'raspberry' in hostname:
+            downloadpath = r'/home/pi/downloads'
+        else:
+            downloadpath = r'/home/peizhong/downloads'
     else:
         downloadpath = r'E:/Downloads'
     return downloadpath
@@ -22,12 +27,16 @@ def getFileServer():
     curRealse = platform.release()
     print('current release is '+curRealse)
     if curOs == "Darwin":
-        downloadpath = r'http://192.168.3.172/downloads/'
+        serverpath = r'http://192.168.3.172/downloads/'
     elif curOs == "Linux":
-        downloadpath = r'http://193.112.41.28/downloads/'
+        hostname = socket.gethostname()
+        if 'raspberry' in hostname:
+            serverpath = r'http://192.168.3.172/downloads/'
+        else:
+            serverpath = r'http://193.112.41.28/downloads/'
     else:
-        downloadpath = r'localhost'
-    return downloadpath
+        serverpath = r'localhost'
+    return serverpath
 
 
 def findAllFile():

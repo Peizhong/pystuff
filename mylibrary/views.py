@@ -13,9 +13,9 @@ from . import tasks
 
 @login_required
 def index(request):
-    res = tasks.add.delay(4, 3)
-    print('call celery:')
-    print(res.ready())
+    #res = tasks.add.delay(4, 3)
+    #print('call celery:')
+    # print(res.ready())
     # handle file upload
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
@@ -32,6 +32,7 @@ def index(request):
     for d in documents:
         [dirname, filename] = os.path.split(d.docfile.path)
         files.append(filename)
+    nolimitFile = filehelper.findAllFile()
     context = {
         'documents': files,
         'form': form
