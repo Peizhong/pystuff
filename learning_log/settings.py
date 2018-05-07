@@ -29,7 +29,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
-    mytoolkit.queryConfig('host')
+    '127.0.0.1',
+    # pi
+    '192.168.3.172',
+    mytoolkit.queryConfig('host'),
 ]
 
 

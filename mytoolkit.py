@@ -7,15 +7,6 @@ import json
 localconfig = {}
 
 
-def queryConfig(name):
-    global localconfig
-    if not localconfig:
-        localconfig = readConfig()
-    if name in localconfig:
-        return localconfig[name]
-    return ''
-
-
 def getDownloadPath():
     curOs = platform.system()
     print('current os is '+curOs)
@@ -24,10 +15,54 @@ def getDownloadPath():
     if curOs == "Darwin":
         downloadpath = r'/Users/Peizhong/Downloads'
     elif curOs == "Linux":
-        downloadpath = r'/home/peizhong/downloads'
+        hostname = socket.gethostname()
+        if 'raspberry' in hostname:
+            downloadpath = r'/home/pi/downloads'
+        else:
+            downloadpath = r'/home/peizhong/downloads'
     else:
         downloadpath = r'E:/Downloads'
     return downloadpath
+
+
+def getFileServer():
+    curOs = platform.system()
+    print('current os is '+curOs)
+    curRealse = platform.release()
+    print('current release is '+curRealse)
+    if curOs == "Darwin":
+        serverpath = r'http://192.168.3.172/downloads/'
+    elif curOs == "Linux":
+        hostname = socket.gethostname()
+        if 'raspberry' in hostname:
+            serverpath = r'http://192.168.3.172/downloads/'
+        else:
+            serverpath = r'http://193.112.41.28/downloads/'
+    else:
+        serverpath = r'localhost'
+    return serverpath
+
+
+def findAllFile(filepath=''):
+    if not filepath:
+        filepath = getDownloadPath()
+    selectedFiles = []
+    for root, dirs, files in os.walk(filepath):
+        for name in files:
+            # hidden file
+            if name.startswith('.'):
+                continue
+            selectedFiles.append(name)
+    return selectedFiles
+
+
+def queryConfig(name):
+    global localconfig
+    if not localconfig:
+        localconfig = readConfig()
+    if name in localconfig:
+        return localconfig[name]
+    return ''
 
 
 def readConfig():

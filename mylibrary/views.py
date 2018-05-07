@@ -6,15 +6,20 @@ from django.template import loader
 import os
 from .models import Document
 from .forms import DocumentForm
+from urllib import parse
+import collections
 
-from . import filehelper
+import mytoolkit
 from . import tasks
+
+
+FileInfo = collections.namedtuple('FileInfo', ['Name', 'UrlPath'])
 
 
 @login_required
 def index(request):
-    #res = tasks.add.delay(4, 3)
-    #print('call celery:')
+    # res = tasks.add.delay(4, 3)
+    # print('call celery:')
     # print(res.ready())
     # handle file upload
     if request.method == 'POST':
@@ -32,17 +37,19 @@ def index(request):
     for d in documents:
         [dirname, filename] = os.path.split(d.docfile.path)
         files.append(filename)
-    nolimitFile = filehelper.findAllFile()
+    packedfiles = []
+    fileServer = mytoolkit.getFileServer()
+    for f in mytoolkit.findAllFile():
+        packedfiles.append(FileInfo(f, parse.quote(fileServer+f)))
     context = {
-        'documents': files,
-        'form': form
+        'documents': packedfiles,
+        'form': form,
     }
     return render(request, 'mylibrary/index.html', context)
 
 
 def player(request, file_name):
     context = {
-        'file_server': filehelper.getFileServer(),
-        'file_name': file_name
+        'fileUrl':   mytoolkit.getFileServer()+parse.quote(file_name)
     }
     return render(request, 'mylibrary/player.html', context)
