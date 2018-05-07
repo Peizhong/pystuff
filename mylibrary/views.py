@@ -40,7 +40,7 @@ def index(request):
     packedfiles = []
     fileServer = mytoolkit.getFileServer()
     for f in mytoolkit.findAllFile():
-        packedfiles.append(FileInfo(f, parse.quote(fileServer+f)))
+        packedfiles.append(FileInfo(f, fileServer+parse.quote(f)))
     context = {
         'documents': packedfiles,
         'form': form,
