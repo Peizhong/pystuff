@@ -2,8 +2,11 @@ import os
 import shutil
 import sys
 import re
+import codecs
+import sqlite3
 import xml.etree.ElementTree as ET
 
+solutionPath = r''
 projectPath = r'D:\Source\Repos\Comtop\Comtop.YTH\Comtop.YTH.App'
 buildPath = r'D:\Source\Repos\Comtop\Comtop.YTH\Comtop.YTH.App\bin\Release'
 
@@ -43,13 +46,13 @@ def getReleaseFolder(version):
     for root, dirs, files in os.walk(desktopPath):
         # 找到最新的压缩包(按名字排序)
         for name in sorted(files, reverse=True):
-            if(name[:4] == '建模工具' and name[-4:] == '.zip'):
+            if(name.startswith('建模工具') and os.path.splitext(name)[1] == '.zip'):
                 lastestZip = name
                 print('latest zip is %s' % (os.path.join(root, lastestZip)))
                 break
-        if len(lastestZip) < 1:
-            print('没有找到压缩包')
-            sys.exit()
+    if not lastestZip:
+        print('没有找到压缩包')
+        sys.exit()
     # 准备打包的文件夹
     newName = '建模工具 %s' % (version)
     newFolderPath = os.path.join(desktopPath, newName)
@@ -87,6 +90,10 @@ def getCopyFileList(configPath):
 
 def copyBuildFile(releasePath):
     configPath = os.path.join(buildPath, 'UpdateConfigV2.xml')
+    dbSrcipts = {
+        'db': '',
+        'sql': []
+    }
     for name in getCopyFileList(configPath):
         ext = os.path.splitext(name)[1]
         if ext in ['.dll', '.xml', '.exe', '.config']:
@@ -96,15 +103,47 @@ def copyBuildFile(releasePath):
                 shutil.copyfile(src, dst)
             else:
                 print("not found "+src)
-        elif ext in ['.txt', '.db']:
-            # 脚本：拷贝工程目录的db和脚本?? 名字不一样。。
-            v = re.match('\d{1,2}\.\d{2}', name)
-            src = os.path.join(projectPath, name)
-            if os.path.exists(src):
-                dst = os.path.join(releasePath, name)
-                shutil.copyfile(src, dst)
-            else:
-                print("not found "+src)
+        elif ext == '.db':
+            dbSrcipts['db'] = name
+        elif ext == '.txt':
+            dbSrcipts['sql'].append(name)
+    # 处理数据库和脚本
+    releaseDbPath = os.path.join(releasePath, 'DB')
+    if os.path.exists(releaseDbPath):
+        shutil.rmtree(releaseDbPath)
+    os.makedirs(releaseDbPath)
+    projectDbPath = os.path.join(projectPath, 'DB')
+    databaseFile = os.path.join(projectPath, dbSrcipts['db'])
+    releaseDatabaseFile = os.path.join(releasePath, dbSrcipts['db'])
+    shutil.copyfile(databaseFile, releaseDatabaseFile)
+    conn = sqlite3.connect(releaseDatabaseFile)
+    sqlVer = re.compile(r'\d{1,2}\.\d{2}')
+    for sql in dbSrcipts['sql']:
+        targetVersion = sqlVer.search(sql).group()
+        for root, dirs, files in os.walk(projectDbPath):
+            for d in dirs:
+                sourceVersion = sqlVer.search(d).group()
+                if targetVersion == sourceVersion:
+                    targetPath = os.path.join(releaseDbPath, targetVersion)
+                    # os.makedirs(targetPath)
+                    # 拷贝project下的dbscript文件夹到release
+                    shutil.copytree(os.path.join(projectDbPath, d), targetPath)
+            break
+    for root, dirs, files in os.walk(releaseDbPath):
+        for name in files:
+            if os.path.splitext(name)[1] == '.txt':
+                with open(os.path.join(root, name), encoding='utf-8-sig') as sqlfile:
+                    u = sqlfile.read()
+                    conn.executescript(u)
+    conn.commit()
+    # clean backup table
+    cursor = conn.execute(
+        r"SELECT name FROM sqlite_master where type = 'table' and name like 'BK20%'")
+    for row in cursor.fetchall():
+        conn.execute('drop table %r' % row[0])
+    conn.execute('vacuum')
+    conn.execute('analyze')
+    conn.close()
 
 
 def packFile(packName, rootPath):
@@ -117,12 +156,16 @@ def packFile(packName, rootPath):
         sys.exit()
 
 
-cmd = buildProject()
+def _main():
+    if len(sys.argv) > 1:
+        publicVersion = '(%s)' % sys.argv[1]
+    else:
+        publicVersion = '(%s)' % input('input the publish version: ')
+    cmd = buildProject()
+    releaseInfo = getReleaseFolder(publicVersion)
+    copyBuildFile(releaseInfo['workFolder'])
+    packFile(releaseInfo['folder'], releaseInfo['folder'])
 
-pubilcVersion = input('input the publish version: ')
 
-releaseInfo = getReleaseFolder(pubilcVersion)
-
-copyBuildFile(releaseInfo['workFolder'])
-
-packFile(releaseInfo['folder'], releaseInfo['folder'])
+if __name__ == '__main__':
+    _main()
