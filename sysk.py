@@ -55,7 +55,8 @@ def replace_invalid_filename_char(filename, replaced_char='_'):
 def whichNew(feeds, localpath):
     newpocast = []
     exfile = []
-    for root, dirs, files in os.walk(localpath):
+    #拆包，没有用的元素用_代替
+    for _, _, files in os.walk(localpath):
         for name in files:
             if '.' not in name:
                 continue
