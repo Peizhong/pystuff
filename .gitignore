@@ -89,6 +89,8 @@ venv/
 ENV/
 .djg
 djg/
+.ml
+ml/
 
 # Spyder project settings
 .spyderproject
