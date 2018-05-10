@@ -34,6 +34,11 @@ class FrenchDesk:
         "处理FrenchDesk[],变成可迭代"
         return self.cards[position]
 
+suit_values = dict(spades=3, hearts=2, diamonds=1, clubs=0)
+
+def spades_high(card):
+    rank_value = FrenchDesk.ranks.index(card.rank)
+    return rank_value*len(suit_values)+suit_values[card.suit]
 
 if __name__ == '__main__':
     desk = FrenchDesk()
@@ -47,14 +52,6 @@ l = [1, 3, 5, 7, 9, 11, 13, 15]
 # [x,y,z] z:方向/步长，如果为负，从最后开始
 l1 = l[:6:-2]
 l1 = l[4::-2]
-
-suit_values = dict(spades=3, hearts=2, diamonds=1, clubs=0)
-
-
-def spades_high(card):
-    rank_value = FrenchDesk.ranks.index(card.rank)
-    return rank_value*len(suit_values)+suit_values[card.suit]
-
 
 class Vector():
     def __init__(self, x, y):
@@ -104,3 +101,19 @@ metro_areas = [('Tokyo', 'JP', 36.933, (35.689722, 139.691667)),
                ('Sao Paulo', 'BR', 19.649, (-23.547778, -46.635833)), ]
 for name, cc, pop, (latitude, longitude) in metro_areas:
     print('%r,%r' % (latitude, longitude))
+
+
+LatLong = collections.namedtuple('Latong','lat long')
+#LatLong = collections.namedtuple('LatLong',['lat','long'])
+City = collections.namedtuple('City','Name Province Country Location')
+shenzhen = City._make(('Shenzhen','Guangdong','China',LatLong(112,24)))
+for key,value in shenzhen._asdict().items():
+    print('%r-%r'%(key,value))
+
+l = list(range(10))
+l[2:5] = [20,30]
+del l[5:7]
+
+three = [['_']*3 for x in range(3)]
+three[2][1] = 'x'
+print(three)
