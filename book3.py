@@ -5,9 +5,12 @@ from random import randrange, randint, choice
 
 from math import hypot
 
+from array import array
+from random import random
+
+
 # 纸牌类：少数属性，没有方法的对象
 Card = collections.namedtuple('Card', ['rank', 'suit'])
-
 
 class FrenchDesk:
     "隐式继承了object类，但功能没有继承。通过实现特殊方法，使其能用于标准库"
@@ -114,6 +117,28 @@ l = list(range(10))
 l[2:5] = [20,30]
 del l[5:7]
 
+#列表的列表
 three = [['_']*3 for x in range(3)]
 three[2][1] = 'x'
 print(three)
+
+#array
+def doArray():
+    floats = array('d',(random() for i in range(10**7)))
+    with open('floats.bin','wb') as fp:
+        floats.tofile(fp)
+    print(floats[-1])
+
+    floats2 = array('d')
+    with open('floats.bin','rb') as fp:
+        floats2.fromfile(fp,10**7)
+    print(floats2[-1])
+
+def doQueue():
+    "双向队列"
+    dq = collections.deque(range(10),maxlen=10)
+    #从尾部取n值插到头部
+    dq.rotate(3)
+    #从头部取n值插到尾部
+    dq.rotate(4)
+    #appendleft, extend
