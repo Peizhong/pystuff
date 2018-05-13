@@ -22,6 +22,7 @@ class DeviceVO(Base):
     ClassifyId = Column('CLASSIFY_ID', String)
     AssetState = Column('ASSET_STATE', Integer)
     VoltageId = Column('BASE_VOLTAGE_ID', String)
+    Techparams = None
 
     def __repr__(self):
         return '%r_%r' % (self.Id, self.DeviceName)
@@ -34,11 +35,15 @@ class FunctionLocationVO(Base):
     ParentId = Column('PARENT_ID', String)
     FlName = Column('FL_NAME', String)
     ClassifyId = Column('CLASSIFY_ID', String)
+    FlType = Column('FL_TYPE', Integer)
     SortNo = Column('SORT_NO', Integer)
     RunningState = Column('RUNNING_STATE', Integer)
     VoltageId = Column('BASE_VOLTAGE_ID', String)
     UpdateTime = Column('UPDATE_TIME', DateTime)
-    FlAsset = relationship('FlAssetConfig', uselist=False)
+    AssetId = None
+    AssetObject = None
+    Techparams = None
+    #FlAsset = relationship('FlAssetConfig', uselist=False)
 
     __table_args__ = (
         ForeignKeyConstraint(
