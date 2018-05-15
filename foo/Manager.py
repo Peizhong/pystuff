@@ -12,6 +12,7 @@ def BuildTree():
     for bill in MainTransfers():
         if len(bill.Workspaces) > 0:
             workspaces = bill.Workspaces
+            break
     for workspace in workspaces:
         workspaceDict = {
             func.Id: Node(func) for func in FunctionLocations([workspace.Id])}

@@ -22,6 +22,7 @@ class DeviceVO(Base):
     ClassifyId = Column('CLASSIFY_ID', String)
     AssetState = Column('ASSET_STATE', Integer)
     VoltageId = Column('BASE_VOLTAGE_ID', String)
+    IsShareDevice = Column('IS_SHARE_DEIVCE', Integer)
     Techparams = None
 
     def __repr__(self):

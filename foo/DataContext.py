@@ -5,7 +5,7 @@ from BasicInfo import ClassifyConfig, BaseinfoConfig, ColumnInfo
 from Asset import FunctionLocationVO, DeviceVO
 
 engine = create_engine(
-    'sqlite:////Users/Peizhong/Downloads/avmt.db', echo=True)
+    'sqlite:////Users/Peizhong/Downloads/avmt.db', echo=False)
 metaData = MetaData(engine)
 
 Session = sessionmaker(bind=engine)
@@ -48,11 +48,30 @@ def QueryTechparam(accountObject):
 deivceDict = {}
 
 
+def QueryDeiceByWorkspace(workspaceIds):
+    formatedId = ','.join(workspaceIds)
+    sql = text(
+        'select d.* from dm_fl_asset fla, dm_device d '
+        'where fla.workspace_id in (:w) and '
+        'fla.asset_id = d.id and '
+        'fla.workspace_id = d.workspace_id')
+    result = []
+    for row in engine.execute(sql, w=formatedId).fetchall():
+        d = DeviceVO()
+        d.Id = row['ID']
+        d.WorkspaceId = row['WORKSPACE_ID']
+        d.DeviceName = row['DEVICE_NAME']
+        d.ClassifyId = row['CLASSIFY_ID']
+        d.AssetState = row['ASSET_STATE']
+        d.VoltageId = row['BASE_VOLTAGE_ID']
+        d.IsShareDevice = row['IS_SHARE_DEVICE']
+        d.UpdateTime = row['UPDATE_TIME']
+        d.Techparams = QueryTechparam(d)
+        deivceDict['%s_%s' % (d.Id, d.WorkspaceId)] = d
+    print('get %d devices' % len(deivceDict.keys()))
+
+
 def QueryDeivce(functionlocation):
-    if len(deivceDict.keys()) < 1:
-        for d in session.query(DeviceVO):
-            d.Techparams = QueryTechparam(d)
-            deivceDict['%s_%s' % (d.Id, d.WorkspaceId)] = d
     key = '%s_%s' % (functionlocation.AssetId, functionlocation.WorkspaceId)
     if key in deivceDict.keys():
         return deivceDict[key]
@@ -63,7 +82,6 @@ def FillDeviceInfo(functionlocation):
     deivce = QueryDeivce(functionlocation)
     if deivce:
         # 基本信息&技术参数
-        classify = QueryClassify(deivce.ClassifyId)
         functionlocation.AssetObject = deivce
 
 
@@ -72,16 +90,15 @@ def FillPartInfo(functionlocation):
 
 
 def FillFunction(functionlocation):
-    session
-    if functionlocation.FlAsset:
+    if functionlocation.AssetId:
         if functionlocation.FlType == 3:
             FillDeviceInfo(functionlocation)
-        functionlocation.AssetObject = DeviceVO()
     else:
-        classify = QueryClassify(functionlocation.ClassifyId)
+        functionlocation.Techparams = QueryTechparam(functionlocation)
 
 
 def FunctionLocations(workspaceIds):
+    QueryDeiceByWorkspace(workspaceIds)
     formatedId = ','.join(workspaceIds)
     sql = text(
         'select f.*, fla.asset_id from dm_function_location f left join dm_fl_asset fla '
@@ -101,13 +118,7 @@ def FunctionLocations(workspaceIds):
         func.VoltageId = row['BASE_VOLTAGE_ID']
         func.UpdateTime = row['UPDATE_TIME']
         func.AssetId = row['ASSET_ID']
-        if func.AssetId:
-            if func.FlType == 3:
-                func.AssetObject = QueryDeivce(func)
-            else:
-                pass
-        else:
-            pass
+        FillFunction(func)
         result.append(func)
     print('get %d FunctionLocations' % len(result))
     return result
