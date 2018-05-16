@@ -1,8 +1,15 @@
 from __future__ import absolute_import, unicode_literals
 from celery import Celery, task, shared_task
 
-import sysk
+import logging
+
 import mytoolkit
+import sysk
+
+LOG_FORMAT = "%(asctime)s - %(levelname)s - :%(lineno)d - %(message)s"
+DATE_FORMAT = "%m-%d-%Y %H:%M:%S"
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT,
+                    filename="../logs/mytask.log")
 
 
 @shared_task
@@ -29,11 +36,19 @@ def test_celery(x, y):
 
 @task
 def downloadSysk():
+    logging.warn('check sysk')
     downloadpath = mytoolkit.getDownloadPath()
     feeds = sysk.fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
     #feeds = fetchRss('http://www.ximalaya.com/album/269179.xml')
-    print("recive %s pocasts" % (len(feeds)))
+    logging.warn("recive %s pocasts" % (len(feeds)))
     newfeeds = sysk.whichNew(feeds, downloadpath)
     newfeedsLen = len(newfeeds)
-    print("found %s new pocasts" % (newfeedsLen))
-    return [f['Title'] for f in newfeeds]
+    logging.warn("found %s new pocasts" % (newfeedsLen))
+    res = []
+    for f in newfeeds:
+        if sysk.downloadSksy(f, downloadpath):
+            res.append(f.Title)
+    logging.warn(str(res))
+
+
+downloadSysk()
