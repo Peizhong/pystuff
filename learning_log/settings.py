@@ -137,3 +137,6 @@ LOGIN_URL = '/users/login/'
 #CELERY_RESULT_BACKEND = 'redis://193.112.41.28:6379'
 #CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERY_IMPORTS = (
+    'mylibrary.tasks',
+)

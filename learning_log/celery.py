@@ -42,9 +42,15 @@ def setup_periodic_tasks(sender, **kwargs):
 app.conf.beat_schedule = {
     'every-day-check-pocast': {
         'task': 'mylibrary.tasks.downloadSysk',
-        'schedule': crontab(),
+        # every hour at midnight
+        'schedule': crontab(minute=0, hour=0),
         # 'args': (16, 16)
     },
+    'staying_alive': {
+        'task': 'mylibrary.tasks.test_celery',
+        'schedule': crontab(minute=1),
+        'args': (4, 3)
+    }
 }
 
 
