@@ -10,11 +10,7 @@ import sys
 from urllib import request
 import logging
 
-LOG_FORMAT = "%(asctime)s - %(levelname)s - :%(lineno)d - %(message)s"
-DATE_FORMAT = "%m-%d-%Y %H:%M:%S"
-logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT,
-                    filename="logs/sksy.log")
-
+logger = logging.getLogger(__name__)
 
 Pocast = collections.namedtuple(
     'Pocast', ['Title', 'Summary', 'Link', 'UpdateTime'])
@@ -80,7 +76,7 @@ def downloadSksy(rss, localpath):
     try:
         encode = replace_invalid_filename_char(rss.Title)
         filepath = '%s/%s.mp3' % (localpath, encode)
-        logging.info("start download from %s" % (rss.Link))
+        logger.info("start download from %s" % (rss.Link))
         header = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
         }
@@ -100,7 +96,7 @@ def downloadSksy(rss, localpath):
 
 def syskTask(downloadPath):
     "给定时任务用的，不用考虑什么时候下载"
-    logging.info('start sysk task')
+    logger.info('start sysk task')
     feeds = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
     print("recive %r pocasts" % len(feeds))
     newfeeds = whichNew(feeds, downloadPath)
@@ -109,7 +105,7 @@ def syskTask(downloadPath):
     if newfeedsLen < 1:
         return
     downloadAll = [downloadSksy(nf, downloadPath) for nf in newfeeds]
-    logging.info('sksy task completed')
+    logger.info('sksy task completed')
 
 
 def startSysk(downloadpath, autodown=True, hour=0):

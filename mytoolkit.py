@@ -7,7 +7,22 @@ import json
 localconfig = {}
 
 
-def getDownloadPath():
+def makeDir(path):
+    # 去除首位空格
+    path = path.strip()
+    # 去除尾部 \ 符号
+    path = path.rstrip("\\")
+    # 判断路径是否存在
+    isExists = os.path.exists(path)
+    if not isExists:
+        # 创建目录操作函数
+        os.makedirs(path)
+        return True
+    else:
+        return False
+
+
+def getDownloadPath(subFolder=''):
     curOs = platform.system()
     print('current os is '+curOs)
     curRealse = platform.release()
@@ -22,6 +37,9 @@ def getDownloadPath():
             downloadpath = r'/home/peizhong/downloads'
     else:
         downloadpath = r'E:/Downloads'
+    if subFolder:
+        downloadpath = os.path.join(downloadpath, subFolder)
+    makeDir(downloadpath)
     return downloadpath
 
 

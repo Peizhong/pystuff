@@ -6,11 +6,16 @@ from django.contrib.auth.decorators import login_required
 from .models import Topic, Entry
 from .forms import TopicForm, EntryForm
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @login_required
 def index(request):
+    logger.warn('get learing index')
     topicList = Topic.objects.filter(owner=request.user).order_by('date_add')
-    #topicList = Topic.objects.order_by('date_add')
+    # topicList = Topic.objects.order_by('date_add')
     entryList = []
     for topic in topicList:
         for e in topic.entry_set.order_by('-date_add'):
@@ -52,7 +57,7 @@ def new_entry(request, topic_id):
         form = EntryForm(data=request.POST)
         if form.is_valid():
             form.save()
-            #todo: 跳转到当前主题
+            # todo: 跳转到当前主题
             return HttpResponseRedirect(reverse('learning_logs:topic', args=(topic_id,)))
     context = {'topic': topic, 'form': form}
     return render(request, 'learning_logs/new_entry.html', context)
