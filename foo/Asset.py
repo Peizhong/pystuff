@@ -1,8 +1,8 @@
-from Base import Base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.orm import relationship
 
-from BasicInfo import BasicInfo, TechparamInfo
+from foo.Base import Base
+from foo.BasicInfo import BasicInfo, TechparamInfo
 
 
 class FlAssetConfig(Base):

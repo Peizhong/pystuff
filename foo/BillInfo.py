@@ -1,4 +1,4 @@
-from Base import Base
+from foo.Base import Base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.orm import relationship
 

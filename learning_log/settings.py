@@ -162,14 +162,19 @@ LOGGING = {
             'propagate': True,
         },
         'learning_logs': {
-            'handlers': ['console'],
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'mylibrary': {
+            'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'mylibrary.tasks': {
             'handlers': ['file_task'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'sysk': {
             'handlers': ['file'],

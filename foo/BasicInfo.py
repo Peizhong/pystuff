@@ -1,4 +1,4 @@
-from Base import Base
+from foo.Base import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -17,6 +17,10 @@ class BaseinfoConfig(Base):
     DictonaryId = Column('DICTIONARY_ID', Integer)
     Dictonary = relationship('BaseinfoDict')
     SortNo = Column('SORT_NO', Integer)
+    IsDisplay = Column('IS_DISPLAY', Integer)
+
+    def __repr__(self):
+        return '%r_%r_%r' % (self.BaseinfoTypeId, self.ColumnName, self.FieldName)
 
 
 class BaseinfoDict(Base):

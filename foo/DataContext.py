@@ -1,15 +1,25 @@
 from sqlalchemy import *
 from sqlalchemy.orm import *
-from BillInfo import MainTransferVO
-from BasicInfo import ClassifyConfig, BaseinfoConfig, ColumnInfo
-from Asset import FunctionLocationVO, DeviceVO
+import redis
+import json
+from collections import namedtuple
+from foo.BillInfo import MainTransferVO
+from foo.BasicInfo import ClassifyConfig, BaseinfoConfig, ColumnInfo
+from foo.Asset import FunctionLocationVO, DeviceVO
 
-engine = create_engine(
-    'sqlite:////Users/Peizhong/Downloads/avmt.db', echo=False)
+from mytoolkit import queryConfig
+
+jsonBaseinfo = namedtuple(
+    'jsonBaseinfo', 'Id BaseinfoTypeid FiledColumn FieldName SortNo Dicts')
+jsonBasedict = namedtuple('jsonBasedic', 'Name Value')
+
+engine = create_engine('sqlite:///%s' % queryConfig('avmtdb'), echo=False)
 metaData = MetaData(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
+
+pool = redis.ConnectionPool(host=queryConfig('host'), port='6379', db=0)
 
 
 def MainTransfers():
@@ -19,6 +29,46 @@ def MainTransfers():
 
 
 classifyDict = {}
+
+
+def QueryBaseinfoConfig(baseinfoTypeId=''):
+    result = []
+    query = session.query(BaseinfoConfig).filter(
+        BaseinfoConfig.IsDisplay == 1)
+    if baseinfoTypeId:
+        query = query.filter(BaseinfoConfig.BaseinfoTypeId == baseinfoTypeId)
+    for bc in query:
+        result.append(bc)
+    print('QueryBaseinfoConfig %d' % len(result))
+    print(result[1])
+    return result
+
+
+def SetBaseinfoBuffer():
+    count = 0
+    r = redis.Redis(connection_pool=pool)
+    for vo in QueryBaseinfoConfig():
+        d = None
+        if vo.Dictonary:
+            d = []
+            for dt in vo.Dictonary:
+                d.append(jsonBasedict(dt.DictKey, dt.DictValue)._asdict())
+        dvo = jsonBaseinfo(vo.Id, vo.BaseinfoTypeId,
+                           vo.ColumnName, vo.FieldName, vo.SortNo, d)._asdict()
+        j = json.dumps(dvo, ensure_ascii=False)
+        r.hset('baseinfoconfig', vo.Id, j)
+        count += 1
+    return count
+
+
+def GetBaseinfoBuffer():
+    r = redis.Redis(connection_pool=pool)
+    count = 0
+    for v in r.hvals('baseinfoconfig'):
+        dvo = json.loads(v)
+        print(dvo)
+        count += 1
+    return count
 
 
 def QueryClassify(classifyId):

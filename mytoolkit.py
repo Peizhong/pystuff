@@ -2,7 +2,15 @@ import os
 import platform
 import socket
 import json
+from urllib import parse
+from collections import namedtuple
 
+FileInfo = namedtuple('FileInfo', 'Name UrlPath')
+
+curOs = platform.system()
+print('current os is '+curOs)
+curRealse = platform.release()
+print('current release is '+curRealse)
 
 localconfig = {}
 
@@ -23,10 +31,6 @@ def makeDir(path):
 
 
 def getDownloadPath(subFolder=''):
-    curOs = platform.system()
-    print('current os is '+curOs)
-    curRealse = platform.release()
-    print('current release is '+curRealse)
     if curOs == "Darwin":
         downloadpath = r'/Users/Peizhong/Downloads'
     elif curOs == "Linux":
@@ -44,10 +48,6 @@ def getDownloadPath(subFolder=''):
 
 
 def getFileServer():
-    curOs = platform.system()
-    print('current os is '+curOs)
-    curRealse = platform.release()
-    print('current release is '+curRealse)
     if curOs == "Darwin":
         serverpath = r'http://192.168.3.172/downloads/'
     elif curOs == "Linux":
@@ -63,14 +63,22 @@ def getFileServer():
 
 def findAllFile(filepath=''):
     if not filepath:
-        filepath = getDownloadPath()
+        filepath = queryConfig('download')
+    fileServer = queryConfig('fileserver')
+    headindex = len(filepath)+1
     selectedFiles = []
-    for root, dirs, files in os.walk(filepath):
+    for root, _, files in os.walk(filepath):
         for name in files:
             # hidden file
             if name.startswith('.'):
                 continue
-            selectedFiles.append(name)
+            fixName = name
+            header = root[headindex:]
+            if header:
+                fixName = '%s||%s' % (header, name)
+            refName = '%s/%s' % (header, name)
+            selectedFiles.append(
+                FileInfo(fixName, fileServer+parse.quote(refName)))
     return selectedFiles
 
 
@@ -93,11 +101,20 @@ def readConfig():
                 config['host'] = getHost()
             if 'database' not in config:
                 config['database'] = databaseConfig(config['host'])
+            if 'download' not in config:
+                config['download'] = getDownloadPath()
+            if 'fileserver' not in config:
+                config['fileserver'] = getFileServer()
+            if 'avmtdb' not in config:
+                config['avmtdb'] = os.path.join(config['download'], 'avmt.db')
     else:
         host = getHost()
         config = {
-            'host': host,
-            'database': databaseConfig(host)
+            'host': getHost(),
+            'database': databaseConfig(host),
+            'download': getDownloadPath(),
+            'fileserver': getFileServer(),
+            'avmtdb': os.path.join(config['download'], 'avmt.db')
         }
     # 不管有没有改数据，都写一遍
     with open(configpath, "w") as write_f:

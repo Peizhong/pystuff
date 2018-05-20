@@ -1,4 +1,4 @@
-from Asset import FunctionLocationVO
+from foo.Asset import FunctionLocationVO
 
 
 def getFullPath(node, route):

@@ -1,6 +1,6 @@
-from Logic import Node
-from Asset import FunctionLocationVO
-from DataContext import MainTransfers, FunctionLocations
+from foo.Logic import Node
+from foo.Asset import FunctionLocationVO
+from foo.DataContext import MainTransfers, FunctionLocations
 from random import randint
 
 

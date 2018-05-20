@@ -18,5 +18,6 @@ pytz==2018.4
 redis==2.10.6
 rope==0.10.7
 six==1.11.0
+SQLAlchemy==1.2.7
 vine==1.1.4
 wrapt==1.10.11
