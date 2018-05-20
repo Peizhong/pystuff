@@ -2,10 +2,10 @@ import os
 import platform
 import socket
 import json
-from urllib import parse
+import uuid
 from collections import namedtuple
 
-FileInfo = namedtuple('FileInfo', 'Name UrlPath')
+FileInfo = namedtuple('FileInfo', 'Id Name FullPath UrlPath')
 
 curOs = platform.system()
 print('current os is '+curOs)
@@ -32,7 +32,7 @@ def makeDir(path):
 
 def getDownloadPath(subFolder=''):
     if curOs == "Darwin":
-        downloadpath = r'/Users/Peizhong/Downloads'
+        downloadpath = r'/Volumes/Downloads'
     elif curOs == "Linux":
         hostname = socket.gethostname()
         if 'raspberry' in hostname:
@@ -61,25 +61,32 @@ def getFileServer():
     return serverpath
 
 
-def findAllFile(filepath=''):
-    if not filepath:
-        filepath = queryConfig('download')
+downloadfiles = []
+
+
+def findAllFile():
+    global downloadfiles
+    downloadfiles.clear()
+    filepath = queryConfig('download')
     fileServer = queryConfig('fileserver')
-    headindex = len(filepath)+1
-    selectedFiles = []
     for root, _, files in os.walk(filepath):
         for name in files:
             # hidden file
             if name.startswith('.'):
                 continue
-            fixName = name
-            header = root[headindex:]
-            if header:
-                fixName = '%s||%s' % (header, name)
-            refName = '%s/%s' % (header, name)
-            selectedFiles.append(
-                FileInfo(fixName, fileServer+parse.quote(refName)))
-    return selectedFiles
+            fullpath = os.path.join(root, name)
+            urlpath = fullpath.replace(filepath, fileServer)
+            downloadfiles.append(
+                FileInfo(str(uuid.uuid4()), name, fullpath, urlpath))
+    return downloadfiles
+
+
+def getFileInfo(fid):
+    global downloadfiles
+    for f in downloadfiles:
+        if f.Id == fid:
+            return f
+    return None
 
 
 def queryConfig(name):
@@ -95,6 +102,7 @@ def readConfig():
     configpath = 'localconfig.json'
     config = {}
     if os.path.exists(configpath):
+        print('read local file')
         with open(configpath, 'r') as read_f:
             config = json.load(read_f)
             if 'host' not in config:
@@ -105,6 +113,10 @@ def readConfig():
                 config['download'] = getDownloadPath()
             if 'fileserver' not in config:
                 config['fileserver'] = getFileServer()
+            if 'emailaccount' not in config:
+                config['emailaccount'] = getAnswer('Email account')
+            if 'emailpasswd' not in config:
+                config['emailpasswd'] = getAnswer('Email password')
             if 'avmtdb' not in config:
                 config['avmtdb'] = os.path.join(config['download'], 'avmt.db')
     else:
@@ -114,6 +126,8 @@ def readConfig():
             'database': databaseConfig(host),
             'download': getDownloadPath(),
             'fileserver': getFileServer(),
+            'emailaccount': getAnswer('Email account'),
+            'emailpasswd': getAnswer('Email password'),
             'avmtdb': os.path.join(config['download'], 'avmt.db')
         }
     # 不管有没有改数据，都写一遍
@@ -135,6 +149,14 @@ def getHost():
     if not host:
         return ip
     return host
+
+
+def getAnswer(question):
+    while True:
+        answer = input('input the %s: ' % question)
+        if answer:
+            return answer
+        print('please try again')
 
 
 def databaseConfig(host, dbflag=1):

@@ -5,8 +5,8 @@
     <ul class="list-group">
         {% for f in documents %}
         <li class="list-group-item">
-            <a href="{% url 'mylibrary:player' f.Name %}">{{ f.Name }}</a>
-            <a class="btn btn-info" href="{{f.UrlPath}}">下载</a>
+            <a href="{% url 'mylibrary:player' f.Id %}">{{ f.Name }}</a>
+            <a class="btn btn-info" href="http://{{f.UrlPath}}">下载</a>
         </li>
         {% endfor %}
     </ul>
@@ -21,6 +21,6 @@
     <p>
         {{ form.docfile.errors }} {{ form.docfile }}
     </p>
-    <button type="button" class="btn btn-primary" name='submit'>上传文件</button>
+    <button name='submit' class="btn btn-primary">上传文件</button>
 </form>
 {% endblock content %}

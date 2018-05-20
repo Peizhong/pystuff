@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
-
+import time
 import mytoolkit
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -126,7 +126,7 @@ LOGGING = {
         'file': {
             'level': 'WARNING',
             'class': 'logging.FileHandler',
-            'filename': 'logs/debug.log',
+            'filename': time.strftime('logs/%Y-%m-%d_debug.log', time.localtime()),
             'formatter': 'verbose'
         },
         'file_task': {

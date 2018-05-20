@@ -19,7 +19,7 @@ metaData = MetaData(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-pool = redis.ConnectionPool(host=queryConfig('host'), port='6379', db=0)
+pool = redis.ConnectionPool(host=queryConfig('host'), port='6379')
 
 
 def MainTransfers():
@@ -46,7 +46,7 @@ def QueryBaseinfoConfig(baseinfoTypeId=''):
 
 def SetBaseinfoBuffer():
     count = 0
-    r = redis.Redis(connection_pool=pool)
+    r = redis.StrictRedis(connection_pool=pool)
     for vo in QueryBaseinfoConfig():
         d = None
         if vo.Dictonary:
@@ -62,13 +62,23 @@ def SetBaseinfoBuffer():
 
 
 def GetBaseinfoBuffer():
-    r = redis.Redis(connection_pool=pool)
+    r = redis.StrictRedis(connection_pool=pool)
     count = 0
     for v in r.hvals('baseinfoconfig'):
         dvo = json.loads(v)
         print(dvo)
         count += 1
     return count
+
+
+def SetNewPocast(pocast):
+    r = redis.StrictRedis(connection_pool=pool)
+    res = r.lpush('newdownloadfile', json.dumps(
+        pocast._asdict(), ensure_ascii=False))
+    r2 = r.lpop('newdownloadfile')
+    jr = json.loads(r2)
+    print(jr)
+    return true
 
 
 def QueryClassify(classifyId):

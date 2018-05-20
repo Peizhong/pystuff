@@ -1,10 +1,9 @@
 import unittest
-from foo.DataContext import QueryBaseinfoConfig, SetBaseinfoBuffer, GetBaseinfoBuffer
-
+from foo.DataContext import QueryBaseinfoConfig, SetBaseinfoBuffer, GetBaseinfoBuffer, SetNewPocast
+from foo.Mail import sendMail
 '''
-python -m unittest test_module1 test_module2
-python -m unittest test_module.TestClass
-python -m unittest test_module.TestClass.test_method
+python -m unittest foo.tests.MailTestCase
+python -m unittest foo.tests.RedisTestCase.test_set_pocast
 '''
 
 
@@ -24,6 +23,18 @@ class RedisTestCase(unittest.TestCase):
         res = GetBaseinfoBuffer()
         print(res)
         self.assertTrue(res > 0)
+
+    def test_set_pocast(self):
+        from sysk import Pocast
+        p = Pocast('测试', 'wulala', 'www.baidu.com', None)
+        res = SetNewPocast(p)
+        self.assertTrue(res)
+
+
+class MailTestCase(unittest.TestCase):
+    def test_can_login(self):
+        res = sendMail('测试', 'nihao')
+        self.assertTrue(res)
 
 
 if __name__ == '__main__':

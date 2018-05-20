@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.template import loader
+from urllib import parse
 import os
 from .models import Document
 from .forms import DocumentForm
@@ -25,12 +26,6 @@ def index(request):
             return HttpResponseRedirect(reverse('mylibrary:index'))
     else:
         form = DocumentForm()
-    documents = Document.objects.filter(
-        owner=request.user).order_by('date_add')
-    files = []
-    for d in documents:
-        [dirname, filename] = os.path.split(d.docfile.path)
-        files.append(filename)
     context = {
         'documents': mytoolkit.findAllFile(),
         'form': form,
@@ -38,12 +33,9 @@ def index(request):
     return render(request, 'mylibrary/index.html', context)
 
 
-def player(request, file_name):
-    file_url = ''
-    for f in mytoolkit.findAllFile():
-        if f.Name == file_name:
-            file_url = f.UrlPath
+def player(request, fid):
+    file_url = mytoolkit.getFileInfo(fid)
     context = {
-        'fileUrl': file_url
+        'fileUrl': parse.quote(file_url.UrlPath)
     }
     return render(request, 'mylibrary/player.html', context)
