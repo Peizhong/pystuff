@@ -1,6 +1,6 @@
 import unittest
 from foo.DataContext import QueryBaseinfoConfig, SetBaseinfoBuffer, GetBaseinfoBuffer, SetNewPocast
-from foo.Mail import sendMail
+from foo.Mail import sendMail, sendNewFile
 '''
 python -m unittest foo.tests.MailTestCase
 python -m unittest foo.tests.RedisTestCase.test_set_pocast
@@ -35,6 +35,13 @@ class MailTestCase(unittest.TestCase):
     def test_can_login(self):
         res = sendMail('测试', 'nihao')
         self.assertTrue(res)
+
+    def test_can_sendfile(self):
+        from mytoolkit import findAllFile
+        for f in findAllFile():
+            res = sendNewFile(f.FullPath)
+            self.assertTrue(res)
+            break
 
 
 if __name__ == '__main__':

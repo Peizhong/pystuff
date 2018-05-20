@@ -72,7 +72,8 @@ def whichNew(feeds, localpath):
 
 
 def downloadSksy(rss, localpath):
-    result = False
+    '''return file path'''
+    result = ''
     try:
         encode = replace_invalid_filename_char(rss.Title)
         filepath = '%s/%s.mp3' % (localpath, encode)
@@ -85,27 +86,13 @@ def downloadSksy(rss, localpath):
         data = page.read()
         with open(filepath, "wb") as code:
             code.write(data)
-        result = True
+        result = filepath
         # todo 数据库记录
     except Exception as e:
         print(e)
-        result = False
+        result = ''
     finally:
         return result
-
-
-def syskTask(downloadPath):
-    "给定时任务用的，不用考虑什么时候下载"
-    logger.info('start sysk task')
-    feeds = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
-    print("recive %r pocasts" % len(feeds))
-    newfeeds = whichNew(feeds, downloadPath)
-    newfeedsLen = len(newfeeds)
-    print("found %r new pocasts" % newfeedsLen)
-    if newfeedsLen < 1:
-        return
-    downloadAll = [downloadSksy(nf, downloadPath) for nf in newfeeds]
-    logger.info('sksy task completed')
 
 
 def startSysk(downloadpath, autodown=True, hour=0):
@@ -186,8 +173,6 @@ def _main():
             downloadpath = r'/home/peizhong/downloads'
     else:
         downloadpath = r'E:/Downloads'
-    syskTask(downloadpath)
-    # startSysk(autodown=False, hour=1, downloadpath=downloadpath)
 
 
 if __name__ == '__main__':

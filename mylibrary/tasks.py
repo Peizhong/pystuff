@@ -5,6 +5,8 @@ from time import ctime
 
 import logging
 
+from foo.Mail import sendNewFile
+
 import mytoolkit
 import sysk
 
@@ -24,7 +26,9 @@ def downloadSysk():
     logger.info("found %s new pocasts" % (newfeedsLen))
     res = []
     for f in newfeeds:
-        if sysk.downloadSksy(f, downloadpath):
-            res.append(f.Title)
+        res = sysk.downloadSksy(f, downloadpath)
+        if res:
+            res.append(res)
+            sendNewFile(res)
     logger.info('downloaded: %s' % str(res))
     return res
