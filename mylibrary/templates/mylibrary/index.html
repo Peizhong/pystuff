@@ -1,12 +1,53 @@
 {% extends "learning_logs/base.html" %} {% block content %}
+<script type="text/javascript">
+    handlechange = function (value) {
+        if (value == 'Logs') {
+            document.getElementById('downloadfiles').style.display = "none"
+            document.getElementById('logfiles').style.display = ""
+        }
+        else {
+            document.getElementById('downloadfiles').style.display = ""
+            document.getElementById('logfiles').style.display = "none"
+        }
+    }
+</script>
 <h1>hello this is my library</h1>
-<div>
-    {% if documents %}
+<select id="lineno" onchange="handlechange(this.value)">
+    <option>Files</option>
+    <option>Logs</option>
+</select>
+<div id='downloadfiles'>
+    <div>
+        {% if documents %}
+        <ul class="list-group">
+            {% for f in documents %}
+            <li class="list-group-item">
+                <a href="{% url 'mylibrary:player' f.Id %}">{{ f.Name }}</a>
+                <a class="btn btn-info" href="http://{{f.UrlPath}}">下载</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No files are available.</p>
+        {% endif %}
+    </div>
+    <form action="{% url 'mylibrary:index' %}" method='post' enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>{{ form.non_field_errors }}</p>
+        <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
+        <p>
+            {{ form.docfile.errors }} {{ form.docfile }}
+        </p>
+        <button name='submit' class="btn btn-primary">上传文件</button>
+    </form>
+</div>
+<div id='logfiles' style="display: none;">
+    <p>these are log</p>
+    {% if logs %}
     <ul class="list-group">
-        {% for f in documents %}
+        {% for f in logs %}
         <li class="list-group-item">
-            <a href="{% url 'mylibrary:player' f.Id %}">{{ f.Name }}</a>
-            <a class="btn btn-info" href="http://{{f.UrlPath}}">下载</a>
+            <a href="{% url 'mylibrary:downloadLog' f.Id %}">{{ f.Name }}</a>
         </li>
         {% endfor %}
     </ul>
@@ -14,13 +55,4 @@
     <p>No files are available.</p>
     {% endif %}
 </div>
-<form action="{% url 'mylibrary:index' %}" method='post' enctype="multipart/form-data">
-    {% csrf_token %}
-    <p>{{ form.non_field_errors }}</p>
-    <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
-    <p>
-        {{ form.docfile.errors }} {{ form.docfile }}
-    </p>
-    <button name='submit' class="btn btn-primary">上传文件</button>
-</form>
 {% endblock content %}

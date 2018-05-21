@@ -27,15 +27,23 @@ def index(request):
     else:
         form = DocumentForm()
     context = {
-        'documents': mytoolkit.findAllFile(),
+        'documents': mytoolkit.findAllDownloadFile(),
+        'logs': mytoolkit.findAllFile('logs'),
         'form': form,
     }
     return render(request, 'mylibrary/index.html', context)
 
 
+def downloadLog(request, fid):
+    f = mytoolkit.getFileInfo(fid)
+    with open(f.FullPath) as fl:
+        c = fl.read()
+    return HttpResponse(c)
+
+
 def player(request, fid):
-    file_url = mytoolkit.getFileInfo(fid)
+    f = mytoolkit.getDownloadFileInfo(fid)
     context = {
-        'fileUrl': parse.quote(file_url.UrlPath)
+        'fileUrl': parse.quote(f.UrlPath)
     }
     return render(request, 'mylibrary/player.html', context)

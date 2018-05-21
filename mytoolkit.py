@@ -64,7 +64,7 @@ def getFileServer():
 downloadfiles = []
 
 
-def findAllFile():
+def findAllDownloadFile():
     global downloadfiles
     downloadfiles.clear()
     filepath = queryConfig('download')
@@ -81,9 +81,33 @@ def findAllFile():
     return downloadfiles
 
 
-def getFileInfo(fid):
+def getDownloadFileInfo(fid):
     global downloadfiles
     for f in downloadfiles:
+        if f.Id == fid:
+            return f
+    return None
+
+
+allFiles = []
+
+
+def findAllFile(path):
+    global allFiles
+    allFiles.clear()
+    for root, _, files in os.walk(path):
+        for name in files:
+            # hidden file
+            if name.startswith('.'):
+                continue
+            fullpath = os.path.join(root, name)
+            allFiles.append(FileInfo(str(uuid.uuid4()), name, fullpath, ''))
+    return allFiles
+
+
+def getFileInfo(fid):
+    global allFiles
+    for f in allFiles:
         if f.Id == fid:
             return f
     return None
