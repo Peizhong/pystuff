@@ -3,7 +3,9 @@ import platform
 import socket
 import json
 import uuid
-from collections import namedtuple
+# 不可修改
+from types import MappingProxyType
+from collections import namedtuple, OrderedDict
 
 FileInfo = namedtuple('FileInfo', 'Id Name FullPath UrlPath')
 
@@ -61,7 +63,7 @@ def getFileServer():
     return serverpath
 
 
-downloadfiles = []
+downloadfiles = OrderedDict()
 
 
 def findAllDownloadFile():
@@ -76,20 +78,19 @@ def findAllDownloadFile():
                 continue
             fullpath = os.path.join(root, name)
             urlpath = fullpath.replace(filepath, fileServer)
-            downloadfiles.append(
-                FileInfo(str(uuid.uuid4()), name, fullpath, urlpath))
-    return downloadfiles
+
+            id = str(uuid.uuid4())
+            downloadfiles[id] = FileInfo(id, name, fullpath, urlpath)
+    return MappingProxyType(downloadfiles)
 
 
 def getDownloadFileInfo(fid):
     global downloadfiles
-    for f in downloadfiles:
-        if f.Id == fid:
-            return f
-    return None
+    f = downloadfiles.get(fid)
+    return f
 
 
-allFiles = []
+allFiles = OrderedDict()
 
 
 def findAllFile(path):
@@ -101,16 +102,15 @@ def findAllFile(path):
             if name.startswith('.'):
                 continue
             fullpath = os.path.join(root, name)
-            allFiles.append(FileInfo(str(uuid.uuid4()), name, fullpath, ''))
-    return allFiles
+            id = str(uuid.uuid4())
+            allFiles[id] = FileInfo(id, name, fullpath, '')
+    return MappingProxyType(allFiles)
 
 
 def getFileInfo(fid):
     global allFiles
-    for f in allFiles:
-        if f.Id == fid:
-            return f
-    return None
+    f = allFiles.get(fid)
+    return f
 
 
 def queryConfig(name):
@@ -163,12 +163,12 @@ def readConfig():
 
 
 def getHost():
-    #ip = socket.gethostbyname(socket.gethostname())
+    # ip = socket.gethostbyname(socket.gethostname())
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     ip = s.getsockname()[0]
     s.close()
-    #addrs = socket.getaddrinfo(socket.gethostname(), None)
+    # addrs = socket.getaddrinfo(socket.gethostname(), None)
     host = input("input host's ip (default is %s): " % ip)
     if not host:
         return ip

@@ -4,7 +4,7 @@ from email.header import Header
 import logging
 
 from urllib import parse
-from mytoolkit import queryConfig, findAllFile
+from mytoolkit import queryConfig, findAllDownloadFile
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def sendMail(subject, message=''):
 
 def sendNewFile(filepath):
     '''下载到新文件后，邮件通知'''
-    for f in findAllFile():
+    for f in findAllDownloadFile().values():
         if f.FullPath == filepath:
             msg = 'http://'+parse.quote(f.UrlPath)
             if sendMail(f.Name, msg):

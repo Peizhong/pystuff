@@ -27,8 +27,8 @@ def index(request):
     else:
         form = DocumentForm()
     context = {
-        'documents': mytoolkit.findAllDownloadFile(),
-        'logs': mytoolkit.findAllFile('logs'),
+        'documents': mytoolkit.findAllDownloadFile().values(),
+        'logs': mytoolkit.findAllFile('logs').values(),
         'form': form,
     }
     return render(request, 'mylibrary/index.html', context)
