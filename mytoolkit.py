@@ -3,6 +3,7 @@ import platform
 import socket
 import json
 import uuid
+import hashlib
 # 不可修改
 from types import MappingProxyType
 from collections import namedtuple, OrderedDict
@@ -41,8 +42,11 @@ def getDownloadPath(subFolder=''):
             downloadpath = r'/home/pi/downloads'
         else:
             downloadpath = r'/home/peizhong/downloads'
-    else:
-        downloadpath = r'E:/Downloads'
+    elif curOs == 'Windows':
+        if curRealse == '10':
+            downloadpath = r'D:/Downloads'
+        else:
+            downloadpath = r'E:/Downloads'
     if subFolder:
         downloadpath = os.path.join(downloadpath, subFolder)
     makeDir(downloadpath)
@@ -208,3 +212,17 @@ def sqliteConfig():
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'db.sqlite3',
     }
+
+
+def getFileMD5(path):
+    '''md5'''
+    if not os.path.exists(path):
+        return ''
+    print('file: '+path)
+    with open(path, 'rb') as f:
+        md5obj = hashlib.md5()
+        md5obj.update(f.read())
+        hash = md5obj.hexdigest()
+        print('update time: ', os.path.getctime(path))
+        print('md5: '+hash)
+        return hash

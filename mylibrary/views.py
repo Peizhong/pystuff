@@ -47,3 +47,14 @@ def player(request, fid):
         'fileUrl': parse.quote(f.UrlPath)
     }
     return render(request, 'mylibrary/player.html', context)
+
+
+def upload(request):
+    if request.method == 'POST':
+        obj = request.FILES.get('upload')
+        logger.info('get file '+obj.name)
+        with open(os.path.join(mytoolkit.getDownloadPath(), obj.name), 'wb') as fp:
+            for chunk in obj.chunks():
+                fp.write(chunk)
+        return HttpResponse('OK')
+    return render(request, 'mylibrary/upload.html')
