@@ -180,3 +180,25 @@ def doSet():
     l1 = {1, 2, 3, 3, 4, 4, 5, 5}
     # 字典和集合，散列，消耗内容，告诉判断元素是否存在
     # hash(search_key)根据散列值查找:先用部分数字查找数据
+
+
+def doFunc():
+    '''一等对象'''
+    # 能赋给变量、能作为参数传给函数、能作为函数返回结果
+    # 高阶函数：接受函数作为参数，或返回函数：如map,filter=>用列表推导代替[ for x in ]
+    # 匿名函数 lambda
+
+
+def doTag(name, *content, cls=None, **attrs):
+    '''生成html标签'''
+    if cls:
+        attrs['class'] = cls
+    if attrs:
+        attrs_str = ' '.join('%s="%s"' % (attr, value)
+                             for attr, value in sorted(attrs.items()))
+    else:
+        attrs_str = ' '
+    if content:
+        return '\n'.join('<%s%s>%s</%s>' % (name, attrs_str, c, name) for c in content)
+    else:
+        return '<%s%s />' % (name, attrs_str)
