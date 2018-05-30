@@ -226,3 +226,11 @@ def getFileMD5(path):
         print('update time: ', os.path.getctime(path))
         print('md5: '+hash)
         return hash
+
+
+def getBytesLen(string):
+    if not isinstance(string, str):
+        return -1
+    if not string:
+        return 0
+    return len(string.encode('GBK'))
