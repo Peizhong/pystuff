@@ -8,7 +8,7 @@ import hashlib
 from types import MappingProxyType
 from collections import namedtuple, OrderedDict
 
-FileInfo = namedtuple('FileInfo', 'Id Name FullPath UrlPath')
+FileInfo = namedtuple('FileInfo', 'Id Name FullPath UrlPath UpdateTime')
 
 curOs = platform.system()
 print('current os is '+curOs)
@@ -73,6 +73,7 @@ downloadfiles = OrderedDict()
 def findAllDownloadFile():
     global downloadfiles
     downloadfiles.clear()
+    tempDict = {}
     filepath = queryConfig('download')
     fileServer = queryConfig('fileserver')
     for root, _, files in os.walk(filepath):
@@ -82,9 +83,13 @@ def findAllDownloadFile():
                 continue
             fullpath = os.path.join(root, name)
             urlpath = fullpath.replace(filepath, fileServer)
-
+            modifytime = os.path.getmtime(fullpath)
             id = str(uuid.uuid4())
-            downloadfiles[id] = FileInfo(id, name, fullpath, urlpath)
+            tempDict[id] = FileInfo(
+                id, name, fullpath, urlpath, modifytime)
+
+    downloadfiles = OrderedDict(
+        sorted(tempDict.items(), key=lambda t: t[1].UpdateTime))
     return MappingProxyType(downloadfiles)
 
 
@@ -100,14 +105,18 @@ allFiles = OrderedDict()
 def findAllFile(path):
     global allFiles
     allFiles.clear()
+    tempDict = {}
     for root, _, files in os.walk(path):
         for name in files:
             # hidden file
             if name.startswith('.'):
                 continue
             fullpath = os.path.join(root, name)
+            modifytime = os.path.getmtime(fullpath)
             id = str(uuid.uuid4())
-            allFiles[id] = FileInfo(id, name, fullpath, '')
+            tempDict[id] = FileInfo(id, name, fullpath, '', modifytime)
+    allFiles = OrderedDict(
+        sorted(tempDict.items(), key=lambda t: t[1].UpdateTime))
     return MappingProxyType(allFiles)
 
 
@@ -130,7 +139,6 @@ def readConfig():
     configpath = 'localconfig.json'
     config = {}
     if os.path.exists(configpath):
-        print('read local file')
         with open(configpath, 'r') as read_f:
             config = json.load(read_f)
             if 'host' not in config:
@@ -234,3 +242,7 @@ def getBytesLen(string):
     if not string:
         return 0
     return len(string.encode('GBK'))
+
+
+if __name__ == '__main__':
+    findAllDownloadFile()

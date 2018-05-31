@@ -5,22 +5,18 @@ python -m unittest foo.tests.MailTestCase
 python -m unittest foo.tests.RedisTestCase.test_set_pocast
 '''
 
+import logging
 
-class RedisTestCase(unittest.TestCase):
-    def test_set_pocast(self):
-        from sysk import Pocast
-        from foo.BasicInfo import SetNewPocast
-        p = Pocast('测试', 'wulala', 'www.baidu.com', None)
-        res = SetNewPocast(p)
-        self.assertTrue(res)
+logger = logging.getLogger(__name__)
 
 
 class MailTestCase(unittest.TestCase):
     def test_can_sendfile(self):
+        ''''''
         from mytoolkit import findAllDownloadFile
         from foo.Mail import sendNewFile
-        for f in findAllDownloadFile():
-            res = sendNewFile(f.FullPath)
+        for id, _ in findAllDownloadFile().items():
+            res = sendNewFile(id)
             self.assertTrue(res)
             break
 

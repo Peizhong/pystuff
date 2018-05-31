@@ -75,6 +75,25 @@
             ]
         },
         {
+            "name": "Python: Django Test",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceFolder}/manage.py",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "test",
+                "mylibrary",
+            ],
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "debugOptions": [
+                "RedirectOutput",
+                "DjangoDebugging"
+            ]
+        },
+        {
             "name": "Python: Flask (0.11.x or later)",
             "type": "python",
             "request": "launch",

@@ -1,4 +1,3 @@
-import os
 import sys
 import requests
 
@@ -17,7 +16,7 @@ class NetClient():
         self.Client = requests.session()
 
     def login(self, route):
-        loginUrl = os.path.join(self.Settings['ServiceUrl'], route)
+        loginUrl = '/'.join((self.Settings['ServiceUrl'], route))
         response = self.Client.get(loginUrl)
         print(self.Client.cookies)
         if 'csrftoken' in self.Client.cookies:
@@ -37,7 +36,7 @@ class NetClient():
     def GetData(self, route, **params):
         if 'sessionid' not in self.Client.cookies:
             return None
-        geturl = os.path.join(self.Settings['ServiceUrl'], route)
+        geturl = '/'.join((self.Settings['ServiceUrl'], route))
         response = self.Client.get(geturl, **params)
         if response.reason == 'OK':
             return response.text
@@ -47,4 +46,4 @@ class NetClient():
 if __name__ == '__main__':
     client = NetClient('http://193.112.41.28:8000', 'admin', 'hello123')
     if client.login('users/login/'):
-        client.GetData('learning_loxgs')
+        client.GetData('learning_logs')

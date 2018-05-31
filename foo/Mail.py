@@ -33,11 +33,10 @@ def sendMail(subject, message=''):
         return False
 
 
-def sendNewFile(filepath):
+def sendNewFile(path):
     '''下载到新文件后，邮件通知'''
-    for f in findAllDownloadFile().values():
-        if f.FullPath == filepath:
-            msg = 'http://'+parse.quote(f.UrlPath)
-            if sendMail(f.Name, msg):
-                return True
+    for _, info in findAllDownloadFile().items():
+        if info.FullPath == path:
+            msg = 'http://'+parse.quote(info.UrlPath)
+            return sendMail(info.Name, msg)
     return False

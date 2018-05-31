@@ -26,9 +26,9 @@ def downloadSysk():
     logger.info("found %s new pocasts" % (newfeedsLen))
     res = []
     for f in newfeeds:
-        res = sysk.downloadSksy(f, downloadpath)
-        if res:
-            res.append(res)
-            sendNewFile(res)
-    logger.info('downloaded: %s' % str(res))
+        npath = sysk.downloadSksy(f, downloadpath)
+        if npath:
+            res.append(npath)
+            sendNewFile(npath)
+    logger.info('downloaded: %s' % str(npath))
     return res
