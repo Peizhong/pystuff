@@ -17,8 +17,8 @@ class NetClient():
 
     def login(self, route):
         loginUrl = '/'.join((self.Settings['ServiceUrl'], route))
+        print(loginUrl)
         response = self.Client.get(loginUrl)
-        print(self.Client.cookies)
         if 'csrftoken' in self.Client.cookies:
             csrftoken = self.Client.cookies['csrftoken']
             login_data = {

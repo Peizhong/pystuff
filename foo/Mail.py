@@ -24,7 +24,7 @@ def sendMail(subject, message=''):
         smtpObj = smtplib.SMTP_SSL(mail_host, 465)
         smtpObj.login(mail_user, mail_pass)
         smtpObj.sendmail(mail_user, receivers, message.as_string())
-        logger.warning('邮件发送成功')
+        logger.warning('邮件发送成功:'+message)
         smtpObj.quit()
         return True
     except smtplib.SMTPException:

@@ -49,14 +49,6 @@ def spades_high(card):
     return rank_value*len(suit_values)+suit_values[card.suit]
 
 
-if __name__ == '__main__':
-    desk = FrenchDesk()
-    print(desk)
-    # choice: 有len,__getitem__
-    print(choice(desk))
-    for card in sorted(desk, key=spades_high):
-        print(card)
-
 l = [1, 3, 5, 7, 9, 11, 13, 15]
 # [x,y,z] z:方向/步长，如果为负，从最后开始
 l1 = l[:6:-2]
@@ -202,3 +194,35 @@ def doTag(name, *content, cls=None, **attrs):
         return '\n'.join('<%s%s>%s</%s>' % (name, attrs_str, c, name) for c in content)
     else:
         return '<%s%s />' % (name, attrs_str)
+
+
+def clip(text: str, max_len: 'int > 0'=80) -> str:
+    '''注释'''
+    end = None
+    if len(text) > max_len:
+        return text[:max_len]
+    return text
+
+
+def useitemgetter():
+    metro_data = [
+        ('Tokyo', 'JP', 36.933, (35.689722, 139.691667)),
+        ('Delhi NCR', 'IN', 21.935, (28.613889, 77.208889)),
+        ('Sao Paulo', 'BR', 19.649, (-23.547778, -46.635833)),
+        ('New York-Newark', 'US', 20.104, (40.808611, -74.020386)),
+    ]
+    from operator import itemgetter, attrgetter
+    for city in sorted(metro_data, key=itemgetter(1)):
+        print(city)
+    cc_name = itemgetter(1, 0)
+    for city in metro_data:
+        print(cc_name(city))
+
+    from mytoolkit import findAllDownloadFile
+    cc_path = attrgetter('FullPath')
+    paths = [cc_path(f) for f in findAllDownloadFile().values()]
+    print(paths)
+
+
+if __name__ == '__main__':
+    useitemgetter()
