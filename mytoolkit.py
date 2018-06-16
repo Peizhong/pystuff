@@ -4,6 +4,8 @@ import socket
 import json
 import uuid
 import hashlib
+import time
+import functools
 # 不可修改
 from types import MappingProxyType
 from collections import namedtuple, OrderedDict
@@ -244,5 +246,91 @@ def getBytesLen(string):
     return len(string.encode('GBK'))
 
 
+test_connection = []
+
+
+def connectivity(source):
+    test_connection.append(source)
+    print('add->', source)
+    return source
+
+
+@connectivity
+def test_mysql():
+    import pymysql
+    try:
+        print('start mysql')
+        host = queryConfig('host')
+        conn = pymysql.connect(host=host, port=3306,
+                               user='root', passwd='mypass', db='MYDEV', charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute('show tables')
+        print(cursor.fetchone())
+        cursor.close()
+        conn.close()
+        print('pass')
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+@connectivity
+def test_redis():
+    import redis
+    try:
+        print('start redis')
+        host = queryConfig('host')
+        r = redis.StrictRedis(host=host, port=6379, db=0)
+        r.set('foo', 'bar')
+        r.delete('foo')
+        print('pass')
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+def testAllConnectivity():
+    res = [x() for x in test_connection]
+
+
+def make_averager():
+    '''闭包：函数内部定义函数'''
+    count = 0
+    total = 0
+    # 只有变量：未在本地作用域绑定，即使定义作用域不可用，还是能用
+    series = []
+
+    def averager(new_value):
+        nonlocal count, total
+        series.append(new_value)
+        count += 1
+        total += new_value
+        return total/count
+    return averager
+
+
+def clock(func):
+    # 把func属性复制到clocked
+    @functools.wraps(func)
+    def clocked(*args):
+        t0 = time.perf_counter()
+        result = func(*args)
+        elapsed = time.perf_counter()-t0
+        name = func.__name__
+        arg_str = ', '.join(repr(arg) for arg in args)
+        print('[%0.8fs] %s(%s) -> %r' % (elapsed, name, arg_str, result))
+        return result
+    return clocked
+
+
+@clock
+def test_nolocal():
+    avg = make_averager()
+    print(avg(1))
+    print(avg(10))
+
+
 if __name__ == '__main__':
-    findAllDownloadFile()
+    test_nolocal()

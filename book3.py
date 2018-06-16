@@ -224,5 +224,66 @@ def useitemgetter():
     print(paths)
 
 
+from abc import ABC, abstractmethod
+
+
+class LineItem():
+    def __init__(self, name, price, count):
+        self.name = name
+        self.price = price
+        self.count = count
+
+
+class Order():
+    def __init__(self):
+        self.cart = []
+
+    def AddItem(self, item):
+        self.cart.append(item)
+
+
+class Promotion(ABC):
+
+    @abstractmethod
+    def discount(self, order):
+        '''return discount'''
+
+
+class Buy3Free1Promotion(Promotion):
+    '''each 3 item free 1 lowest price item'''
+
+    def discount(self, order):
+        items = []
+        for item in order.cart:
+            for _ in range(item.count):
+                items.append((item.price, item.name))
+        freeCount = round(len(items)/3.0)
+        if freeCount > 0:
+            freeitems = sorted(items, key=lambda x: x[0])[:freeCount]
+            value = sum([x[0] for x in freeitems])
+            print(value)
+            return value
+        return 0
+
+
+def calOrder():
+    '''策略模式：封装一系列算法，封装起来，可以替换'''
+    order = Order()
+    item = LineItem('item1', 1, 1)
+    order.AddItem(item)
+    item = LineItem('item2', 2, 2)
+    order.AddItem(item)
+    item = LineItem('item1', 1, 3)
+    order.AddItem(item)
+    item = LineItem('item3', 3, 4)
+    order.AddItem(item)
+    item = LineItem('item4', 0.5, 2)
+    order.AddItem(item)
+    item = LineItem('item5', 2, 1)
+    order.AddItem(item)
+    promotion = Buy3Free1Promotion()
+    discount = promotion.discount(order)
+
+
 if __name__ == '__main__':
-    useitemgetter()
+    calOrder()
