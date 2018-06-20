@@ -1,4 +1,4 @@
-#流畅的python: 介绍python3的特性
+# 流畅的python: 介绍python3的特性
 import collections
 
 import re
@@ -10,6 +10,15 @@ from math import hypot
 from array import array
 from random import random
 
+import time
+
+import functools
+
+import html
+
+import numbers
+
+import copy
 
 # 纸牌类：少数属性，没有方法的对象
 Card = collections.namedtuple('Card', ['rank', 'suit'])
@@ -106,7 +115,7 @@ for name, cc, pop, (latitude, longitude) in metro_areas:
 
 
 LatLong = collections.namedtuple('Latong', 'lat long')
-#LatLong = collections.namedtuple('LatLong',['lat','long'])
+# LatLong = collections.namedtuple('LatLong',['lat','long'])
 City = collections.namedtuple('City', 'Name Province Country Location')
 shenzhen = City._make(('Shenzhen', 'Guangdong', 'China', LatLong(112, 24)))
 for key, value in shenzhen._asdict().items():
@@ -143,7 +152,7 @@ def doQueue():
     dq.rotate(3)
     # 从头部取n值插到尾部
     dq.rotate(4)
-    #appendleft, extend
+    # appendleft, extend
 
 
 def readBook():
@@ -285,5 +294,99 @@ def calOrder():
     discount = promotion.discount(order)
 
 
+def clock(func):
+    '''装饰器，计算程序运行时间'''
+    @functools.wraps(func)
+    def clocked(*args, **kwargs):
+        print('装饰器，被装饰的函数定义后立即执行')
+        ''''wraps把func属性复制到clocked'''
+        t0 = time.time()
+        result = func(*args, **kwargs)
+        elapsed = time.time()
+        name = func.__name__
+        arg_lst = []
+        if args:
+            arg_lst.append(','.join(repr(a) for a in args))
+        if kwargs:
+            arg_lst.append(','.join(repr(a) for a in kwargs))
+        arg_str = ','.join(arg_lst)
+        print('[%0.8fs] %s(%s) -> %r ' % (elapsed, name, arg_str, result))
+        return result
+    return clocked
+
+
+@functools.lru_cache()  # 使用缓存
+@clock
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-2)+fibonacci(n-1)
+
+
+@functools.singledispatch
+def htmlize(obj):
+    '''singledispatch处理object基函数'''
+    content = html.escape(repr(obj))
+    return '<pre>{}</pre>'.format(content)
+
+
+@htmlize.register(str)
+def _(text):
+    '''各个专门函数用'''
+    content = html.escape(text).replace('\n', '<br>\n')
+    return '<p>{0}</p>'.format(content)
+
+
+@htmlize.register(numbers.Integral)
+def _(n):
+    return '<pre>{0} (0x{0:x})</pre>'.format(n)
+
+
+@htmlize.register(tuple)
+def _(seq):
+    inner = '<>'
+
+
+registry = set()
+
+
+def register(active=True):
+    '''参数化的装饰器，第二个才是func'''
+    def decorate(func):
+        if active:
+            registry.add(func)
+        else:
+            registry.discard(func)
+        return func
+    return decorate
+
+
+@register(active=False)
+def func1():
+    print('running f1()')
+
+
+@register(active=True)
+def func2():
+    print('running f2()')
+
+
+DEFAULT_FMT = '[{elapsed:0.8f}s] {name}({args}) -> {result}'
+
+
+def clock_withparam(fmt=DEFAULT_FMT):
+    def decorate(func):
+        def clocked(*args):
+            t0 = time.time()
+            name = func.__name__
+            result = func(*args)
+            elapsed = time.time()-t0
+            # locals引用clocked的局部变量
+            print(fmt.format(**locals()))
+            return result
+        return clocked
+    return decorate
+
+
 if __name__ == '__main__':
-    calOrder()
+    print(fibonacci(6))
