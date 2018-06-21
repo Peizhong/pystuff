@@ -5,9 +5,11 @@
 
 import time
 import functools
+from operator import itemgetter
 
 import sqlite3
 import pymysql
+import pymysql.cursors
 
 import mytoolkit
 
@@ -36,41 +38,119 @@ mysqlserver = mytoolkit.queryConfig('host')
 
 def sq2mq(func):
     'sqlite->mysql'
-    print('加载时立即执行')
-
+    # print('加载时立即执行')
     def connect():
         res = func(sqlite=sqlitepath, mysql=mysqlserver)
-
     jobToRun.append(connect)
     return connect
 
 
-def reorderTable(columnInfo):
-    # key值默认按这个排序
-    defaultOrder = ['id', 'workspace_id', 'function_location_id', 'asset_id']
+# key值默认按这个排序
+defaultOrder = ['id', 'workspace_id', 'function_location_id', 'asset_id', 'operation_flag', 'update_time',
+                'province_code', 'bureau_code', 'power_grid_flag', 'data_from', 'optimistic_lock_version']
 
+
+@functools.lru_cache()
+def getIndex(col: str):
+    lowerCol = col.lower()
+    if lowerCol in defaultOrder:
+        return repr(defaultOrder.index(lowerCol))
+    else:
+        return 'z'+lowerCol
+
+
+def insertTable(mysql, tableName, columnInfo, items):
+    dropSql = 'drop table if exists %s' % tableName.lower()
+    dropSql = 'drop table if exists %s' % tableName.upper()
     keys = sorted(
         (col for col in columnInfo if col[-1] > 0), key=lambda k: k[-1])
     others = sorted(
-        (col for col in columnInfo if col[-1] == 0), key=lambda k: k[1])
-    print(list(keys))
-    print(list(others))
+        (col for col in columnInfo if col[-1] == 0), key=lambda k: getIndex(k[1]))
+    basicDef = itemgetter(1, 2)
+    justName = itemgetter(1)
+    createSql = 'create table `%s` (%s,%s,primary key(%s)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;' % (
+        tableName,
+        ','.join(['`%s` %s not null' % basicDef(k) for k in keys]),
+        ','.join(['`%s` %s' % basicDef(c) for c in others]),
+        ','.join(['`%s`' % justName(k) for k in keys]))
+    # print(createSql)
+
+    myconn = pymysql.connect(host=mysql, user='root', password='mypass',
+                             db='MYDEV', charset='utf8', cursorclass=pymysql.cursors.DictCursor)
+
+    insertTemplate = 'replace into `%s`(%s) values(%s)' % (tableName, ','.join(
+        [justName(c) for c in columnInfo]), ','.join('%s' for c in columnInfo))
+    try:
+        # ACID:原子性、一致性、隔离性、持久性
+        myconn.begin()
+        with myconn.cursor() as cursor:
+            # create,drop,alter..隐式提交
+            cursor.execute(dropSql)
+            cursor.execute(createSql)
+            #cursor.execute('fuck me')
+            for i in items:
+                cursor.execute(insertTemplate, i)
+            #cursor.executemany(insertTemplate, items)
+        myconn.commit()
+    except Exception as e:
+        print(e)
+        myconn.rollback()
+    finally:
+        myconn.close()
 
 
 @sq2mq
 @clock
-def copyFunctionLocation(sqlite, mysql):
-    table_name = 'DM_FUNCTION_LOCATION'
-    print('do something from %s to %s' % (sqlite, mysql))
+def copyFunctionLocation(sqlite: 'sqlite 数据库路径', mysql: 'mysql 数据库地址'):
+    tableName = 'DM_FUNCTION_LOCATION'
+    #print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
     # create table
-    cur.execute('select * from dm_function_location')
-    # print(cur.fetchone())
-    cur.execute('PRAGMA table_info(dm_fl_asset)')
+    cur.execute('PRAGMA table_info(%s)' % tableName)
     columns = cur.fetchall()
-    reorderTable(columns)
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
+    # print(columns)
+    cur.close()
+    conn.close()
+
+
+@sq2mq
+@clock
+def copyDevice(sqlite, mysql):
+    tableName = 'DM_DEVICE'
+    #print('do something from %s to %s' % (sqlite, mysql))
+    # with?
+    conn = sqlite3.connect(sqlite)
+    cur = conn.cursor()
+    # create table
+    cur.execute('PRAGMA table_info(%s)' % tableName)
+    columns = cur.fetchall()
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
+    # print(columns)
+    cur.close()
+    conn.close()
+
+
+@sq2mq
+@clock
+def copyFlAsset(sqlite, mysql):
+    tableName = 'DM_FL_ASSET'
+    #print('do something from %s to %s' % (sqlite, mysql))
+    # with?
+    conn = sqlite3.connect(sqlite)
+    cur = conn.cursor()
+    # create table
+    cur.execute('PRAGMA table_info(%s)' % tableName)
+    columns = cur.fetchall()
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
     # print(columns)
     cur.close()
     conn.close()

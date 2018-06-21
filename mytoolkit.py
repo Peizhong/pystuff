@@ -255,7 +255,7 @@ def connectivity(source):
     return source
 
 
-@connectivity
+# @connectivity
 def test_mysql():
     import pymysql
     try:
@@ -275,7 +275,7 @@ def test_mysql():
         return False
 
 
-@connectivity
+# @connectivity
 def test_redis():
     import redis
     try:
