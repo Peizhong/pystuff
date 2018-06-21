@@ -6,6 +6,7 @@
 import time
 import functools
 from operator import itemgetter
+from concurrent import futures
 
 import sqlite3
 import pymysql
@@ -88,9 +89,10 @@ def insertTable(mysql, tableName, columnInfo, items):
             cursor.execute(dropSql)
             cursor.execute(createSql)
             #cursor.execute('fuck me')
-            for i in items:
-                cursor.execute(insertTemplate, i)
-            #cursor.executemany(insertTemplate, items)
+            # for i in items:
+            #cursor.execute(insertTemplate, i)
+            print('start write table '+tableName)
+            cursor.executemany(insertTemplate, items)
         myconn.commit()
     except Exception as e:
         print(e)
@@ -116,6 +118,7 @@ def copyFunctionLocation(sqlite: 'sqlite 数据库路径', mysql: 'mysql 数据�
     # print(columns)
     cur.close()
     conn.close()
+    return 1
 
 
 @sq2mq
@@ -135,6 +138,27 @@ def copyDevice(sqlite, mysql):
     # print(columns)
     cur.close()
     conn.close()
+    return 1
+
+
+@sq2mq
+@clock
+def copyParts(sqlite, mysql):
+    tableName = 'DM_PARTS'
+    #print('do something from %s to %s' % (sqlite, mysql))
+    # with?
+    conn = sqlite3.connect(sqlite)
+    cur = conn.cursor()
+    # create table
+    cur.execute('PRAGMA table_info(%s)' % tableName)
+    columns = cur.fetchall()
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
+    # print(columns)
+    cur.close()
+    conn.close()
+    return 1
 
 
 @sq2mq
@@ -154,12 +178,137 @@ def copyFlAsset(sqlite, mysql):
     # print(columns)
     cur.close()
     conn.close()
+    return 1
 
 
+@sq2mq
+@clock
+def copyAssetTechparam(sqlite, mysql):
+    tableName = 'DM_A_ASSET'
+    #print('do something from %s to %s' % (sqlite, mysql))
+    # with?
+    conn = sqlite3.connect(sqlite)
+    cur = conn.cursor()
+    # create table
+    cur.execute('PRAGMA table_info(%s)' % tableName)
+    columns = cur.fetchall()
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
+    # print(columns)
+    cur.close()
+    conn.close()
+    return 1
+
+
+@sq2mq
+@clock
+def copyClassify(sqlite, mysql):
+    tableName = 'DM_CLASSIFY'
+    #print('do something from %s to %s' % (sqlite, mysql))
+    # with?
+    conn = sqlite3.connect(sqlite)
+    cur = conn.cursor()
+    # create table
+    cur.execute('PRAGMA table_info(%s)' % tableName)
+    columns = cur.fetchall()
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
+    # print(columns)
+    cur.close()
+    conn.close()
+    return 1
+
+
+@sq2mq
+@clock
+def copyTechparam(sqlite, mysql):
+    tableName = 'DM_TECHPARAM'
+    #print('do something from %s to %s' % (sqlite, mysql))
+    # with?
+    conn = sqlite3.connect(sqlite)
+    cur = conn.cursor()
+    # create table
+    cur.execute('PRAGMA table_info(%s)' % tableName)
+    columns = cur.fetchall()
+    insertTable(mysql, tableName, columns,
+                (r for r in cur.execute('select * from %s' % tableName)))
+    # print(cur.fetchone())
+    # print(columns)
+    cur.close()
+    conn.close()
+    return 1
+
+
+MAX_WORKER = 10
+
+
+def do(func):
+    res = func()
+    return res
+
+
+@clock
 def doAll():
+    workers = min(MAX_WORKER, len(jobToRun))
+    # 不同线程中执行
+    with futures.ThreadPoolExecutor(workers) as executor:
+        res = executor.map(do, jobToRun)
+    return len(list(res))
+
+
+@clock
+def doOneByOne():
     for job in jobToRun:
         job()
 
 
+def coroutine(func):
+    '装饰器预激协程next'
+    @functools.wraps(func)
+    def primer(*args, **kwargs):
+        gen = func(*args, **kwargs)
+        next(gen)
+        return gen
+    return primer
+
+
+@coroutine
+def coroutineAverager():
+    total = 0.0
+    count = 0
+    average = 0
+    while True:
+        # yield后面的值发给调用方，然后暂停执行
+        # 等调用方把值发个协程，再执行term赋值和后面的代码
+        term = yield average
+        if term is None:
+            # 抛出异常，异常对象保存返回值
+            break
+        total += term
+        count += 1
+        average = total/count
+        print('coroutineAverager:%r' % average)
+    return (average, count)
+
+
+def doCoroutineAverager():
+    from inspect import getgeneratorstate
+    coro_avg = coroutineAverager()
+    print(getgeneratorstate(coro_avg))
+    # send:触发协程
+    coro_avg.send(10)
+    print(getgeneratorstate(coro_avg))
+    coro_avg.send(20)
+    try:
+        c = coro_avg.send(None)
+    except StopIteration as exc:
+        result = exc.value
+    coro_avg.close()
+    print(getgeneratorstate(coro_avg))
+
+
 if __name__ == '__main__':
+    # doOneByOne()
     doAll()
