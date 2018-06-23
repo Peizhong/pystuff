@@ -7,6 +7,7 @@ import time
 import functools
 from operator import itemgetter
 from concurrent import futures
+from time import sleep, strftime
 
 import sqlite3
 import pymysql
@@ -254,8 +255,64 @@ def doAll():
     workers = min(MAX_WORKER, len(jobToRun))
     # 不同线程中执行
     with futures.ThreadPoolExecutor(workers) as executor:
+        # 线程池运行可调用对象
+        # 受GIL全局解释器锁的限制，并不是并行，但对I/O密集型的无影响
+        # Python的实现方式: CPyton, Pypy, IronPython
+        # CPython, 将Python源码编译成CPython字节码，然后再由虚拟机运行
+        # CPython兼容c编写的扩展
+        # PyPy使用JIT，动态编译，性能提升，但第三方模块兼容不好
+        # I/O操作，等待系统返回时，或者time.sleep()，会释放GIL
+        # 返回一个生成器，返回结果与调用顺序一致
         res = executor.map(do, jobToRun)
+        print('result is out')
+    print('result is really out')
     return len(list(res))
+
+
+def arcfour_test(size):
+    print('do {} '.format(size))
+    for i in range(1, size):
+        for j in range(1, size):
+            for k in range(1, size):
+                v = (i+j*k)/k*(43/j+i*k)
+    sleep(size/10)
+    return v
+
+
+@clock
+def doAllCpu():
+    # 有4个进程的话会启动4次..
+    with futures.ProcessPoolExecutor() as executor:
+        to_do = []
+        for j in range(10, 30):
+            # 期物
+            future = executor.submit(arcfour_test, j)
+            to_do.append(future)
+        result = []
+        # 等待运行完毕
+        for future in futures.as_completed(to_do):
+            res = future.result()
+            result.append(res)
+    return len(result)
+
+
+@clock
+def doAllWithDetail():
+    workers = min(MAX_WORKER, len(jobToRun))
+    with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        to_do = []
+        for j in jobToRun:
+            # 排定可调用对象的执行时间，返回一个期物
+            future = executor.submit(do, j)
+            to_do.append(future)
+            print('Scheduled for {}:{}'.format(j.__name__, future))
+        result = []
+        for future in futures.as_completed(to_do):
+            # 完成后返回结果
+            res = future.result()
+            print('{}:{}'.format(future, res))
+            result.append(res)
+    return len(result)
 
 
 @clock
