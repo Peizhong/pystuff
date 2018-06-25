@@ -5,7 +5,8 @@
 
 import time
 import functools
-from operator import itemgetter
+from operator import itemgetter, attrgetter
+from abc import ABC, abstractmethod
 from concurrent import futures
 from time import sleep, strftime
 
@@ -31,6 +32,8 @@ def clock(func):
         print('%s(%s): %r' % (func.__name__, arglist, elapsed))
     return clocked
 
+
+MAX_WORKER = 10
 
 jobToRun = []
 
@@ -89,9 +92,9 @@ def insertTable(mysql, tableName, columnInfo, items):
             # create,drop,alter..隐式提交
             cursor.execute(dropSql)
             cursor.execute(createSql)
-            #cursor.execute('fuck me')
+            # cursor.execute('fuck me')
             # for i in items:
-            #cursor.execute(insertTemplate, i)
+            # cursor.execute(insertTemplate, i)
             print('start write table '+tableName)
             cursor.executemany(insertTemplate, items)
         myconn.commit()
@@ -102,11 +105,256 @@ def insertTable(mysql, tableName, columnInfo, items):
         myconn.close()
 
 
+class FunctionLocationVO:
+    '''
+        # 在__dict__中储存实例属性 会消耗内存, 使用__slots__改变属性的存储方式
+        # 只能用slot中定义的属性
+        # 继承要重写
+    __slots__ = ('__id', '__workspaceId', '__flName',
+                 '__classifyId', '__parentId')
+    '''
+    Columns = ('id', 'workspace_id', 'fl_name', 'classify_id', 'fl_type',
+               'parent_id', 'fla.asset_id', 'running_state', 'sort_no', 'update_time')
+
+    def __init__(self, id, workspaceId):
+        # __标记为私有, 会被改写成_FunctionLocationVO__id, 仍然能访问
+        self.__id = id
+        self.__workspaceId = workspaceId
+
+    @property
+    def Id(self):
+        return self.__id
+
+    @property
+    def WorkspaceId(self):
+        return self.__workspaceId
+
+    @classmethod
+    def BuildFromRow(cls, row):
+        '''第一个参数是类本身，可用作备选构造方法'''
+        ziped = zip(cls.Columns, row)
+        packed = {z[0]: z[1] for z in ziped}
+        id = packed.get('id')
+        workspaceId = packed.get('workspace_id')
+        f = FunctionLocationVO(id, workspaceId)
+        f.FlName = packed.get('fl_name')
+        f.ClassifyId = packed.get('classify_id')
+        f.FlType = packed.get('fl_type')
+        f.ParentId = packed.get('parent_id')
+        f.AssetId = packed.get('fla.asset_id')
+        f.SortNo = packed.get('sort_no')
+        f.RunningState = packed.get('running_state')
+        f.UpdateTime = packed.get('update_time')
+        return f
+
+    # 可散列的条件: 支持hash和eq
+    def __hash__(self):
+        return hash("{}_{}".format(self.__id, self.__workspaceId))
+
+    def __eq__(self, other):
+        return self.Id == other.Id and self.WorkspaceId == other.WorkspaceId
+
+    def __str__(self):
+        return "{}_{}".format(self.__id, self.__workspaceId)
+
+
+class AssetObjectVO(ABC):
+    def __init__(self):
+        pass
+
+
+class DeviceObjectVO(AssetObjectVO):
+    Columns = ('id', 'device_name', 'classify_id',
+               'is_share_device', 'update_time')
+
+    def __init__(self, deviceId):
+        AssetObjectVO.__init__(self)
+        self.__id = deviceId
+
+    @classmethod
+    def BuildFromRow(cls, row):
+        d = DeviceObjectVO(row[0])
+        d.DeviceName = row[1]
+        d.ClassifyId = row[2]
+        d.IsShareDeivce = row[3]
+        d.UpdateTime = row[4]
+        return d
+
+    @property
+    def Id(self):
+        return self.__id
+
+
+class PartsObjectVO(AssetObjectVO):
+    Columns = ('id', 'parts_name', 'classify_id', 'update_time')
+
+    def __init__(self, partsId):
+        AssetObjectVO.__init__(self)
+        self.__id = partsId
+
+    @classmethod
+    def BuildFromRow(cls, row):
+        p = PartsObjectVO(row[0])
+        p.PartsName = row[1]
+        p.ClassifyId = row[2]
+        p.UpdateTime = row[3]
+        return p
+
+    @property
+    def Id(self):
+        return self.__id
+
+
+class NodeViewModelVO:
+    __slots__ = ('__functionlocation', 'ParentNode', 'ChildNodes')
+
+    def __init__(self, functionlocation: FunctionLocationVO):
+        self.__functionlocation = functionlocation
+        self.ParentNode = None
+        self.ChildNodes = None
+
+    @property
+    def FunctionLocation(self):
+        return self.__functionlocation
+
+    @property
+    def Id(self):
+        return self.__functionlocation.Id if self.__functionlocation else None
+
+    @property
+    def Name(self):
+        return self.__functionlocation.FlName if self.__functionlocation else ''
+
+    @property
+    def ParentId(self):
+        return self.__functionlocation.ParentId if self.__functionlocation else None
+
+
+def SetFunctionLocationAsset(functions: [], devices: dict, parts: dict):
+    for f in functions:
+        if f.AssetId:
+            if f.FlType == 3:
+                f.AssetObject = devices.get(f.AssetId)
+            elif f.FlType == 4:
+                f.AssetObject = parts.get(f.AssetId)
+
+
+@functools.lru_cache()
+def columnToQuery(classType, header):
+    if classType is FunctionLocationVO:
+        return ','.join('{}.{}'.format(header, c) if '.' not in c else c for c in FunctionLocationVO.Columns)
+    if classType is DeviceObjectVO:
+        return ','.join('{}.{}'.format(header, c) if '.' not in c else c for c in DeviceObjectVO.Columns)
+    if classType is PartsObjectVO:
+        return ','.join('{}.{}'.format(header, c) if '.' not in c else c for c in PartsObjectVO.Columns)
+    return header+'.*'
+
+
+def BuildWorkspaceTree(workspace, functions):
+    objectId = workspace[2]
+    rootNode = None
+    nodeDict = {f.Id: NodeViewModelVO(f) for f in functions}
+    for n in nodeDict.values():
+        if n.Id == objectId:
+            rootNode = n
+        parentNode = nodeDict.get(n.ParentId)
+        if parentNode:
+            n.ParentNode = parentNode
+            if not parentNode.ChildNodes:
+                parentNode.ChildNodes = []
+            parentNode.ChildNodes.append(n)
+    return rootNode
+
+
+conn = None
+cursor = None
+
+
+def LoadDevice(workspaceId: str)->dict:
+    global conn, cursor
+    #conn = sqlite3.connect(sqlitepath)
+    #cursor = conn.cursor()
+    columns = columnToQuery(DeviceObjectVO, 'd')
+    cursor.execute('select {0} from dm_function_location f, dm_fl_asset fla, dm_device d where f.workspace_id = ? and fla.object_type = 5 and f.id = fla.function_location_id and f.workspace_id = fla.workspace_id and fla.asset_id = d.id and fla.workspace_id = d.workspace_id'.format(
+        columns), (workspaceId,))
+    devices = {d[0]: DeviceObjectVO.BuildFromRow(d) for d in cursor.fetchall()}
+    # cursor.close()
+    # conn.close()
+    return devices
+
+
+def LoadParts(workspaceId: str)->dict:
+    global conn, cursor
+    #conn = sqlite3.connect(sqlitepath)
+    #cursor = conn.cursor()
+    columns = columnToQuery(PartsObjectVO, 'p')
+    cursor.execute('select {0} from dm_function_location f, dm_fl_asset fla, dm_parts p where f.workspace_id = ? and fla.object_type = 6 and f.id = fla.function_location_id and f.workspace_id = fla.workspace_id and fla.asset_id = p.id and fla.workspace_id = p.workspace_id'.format(
+        columns), (workspaceId,))
+    parts = {p[0]: PartsObjectVO.BuildFromRow(p) for p in cursor.fetchall()}
+    # cursor.close()
+    # conn.close()
+    return parts
+
+
+def LoadFunctionLocation(workspaceId: str):
+    global conn, cursor
+    #conn = sqlite3.connect(sqlitepath)
+    #cursor = conn.cursor()
+    columns = columnToQuery(FunctionLocationVO, 'f')
+    cursor.execute('select {0} from dm_function_location f left join dm_fl_asset fla on f.id = fla.function_location_id where f.workspace_id = ?'.format(
+        columns,), (workspaceId,))
+    functionlocations = tuple(FunctionLocationVO.BuildFromRow(f)
+                              for f in cursor.fetchall())
+    # cursor.close()
+    # conn.close()
+    devices = LoadDevice(workspaceId)
+    parts = LoadParts(workspaceId)
+    SetFunctionLocationAsset(functionlocations, devices, parts)
+    del devices
+    del parts
+    return functionlocations
+
+
+@clock
+def LoadMainTransBill(businessCode):
+    # 查询对应工作区数据
+    global conn, cursor
+    conn = sqlite3.connect(sqlitepath)
+    cursor = conn.cursor()
+    #cursor.execute('select w.id,workspace_name,w.object_id from dm_workspace w, dm_main_transfer m where m.BUSINESS_BILL_CODE = ? and m.id = w.BUSINESS_BILL_ID', (businessCode,))
+    cursor.execute(
+        'select w.id,workspace_name,w.object_id from dm_workspace w')
+    workspaces = cursor.fetchall()
+    workspaceFunctions = tuple(LoadFunctionLocation(w[0]) for w in workspaces)
+
+    cursor.close()
+    conn.close()
+    cursor = None
+    conn = None
+    workspaceNodes = []
+    for param in zip(workspaces, workspaceFunctions):
+        future = BuildWorkspaceTree(param[0], param[1])
+        workspaceNodes.append(future)
+    '''
+    cpython阻塞型io用线程才有用
+    with futures.ThreadPoolExecutor(2) as executor:
+        jobs = []
+        for param in zip(workspaces, workspaceFunctions):
+            future = executor.submit(BuildWorkspaceTree, param[0], param[1])
+            jobs.append(future)
+        for future in futures.as_completed(jobs):
+            workspaceNodes.append(future.result())
+    '''
+    total = sum(len(f) for f in workspaceFunctions)
+    print('query {} funcionts in {} workspaces'.format(total, len(workspaces)))
+    return workspaceNodes
+
+
 @sq2mq
 @clock
 def copyFunctionLocation(sqlite: 'sqlite 数据库路径', mysql: 'mysql 数据库地址'):
     tableName = 'DM_FUNCTION_LOCATION'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -126,7 +374,7 @@ def copyFunctionLocation(sqlite: 'sqlite 数据库路径', mysql: 'mysql 数据�
 @clock
 def copyDevice(sqlite, mysql):
     tableName = 'DM_DEVICE'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -146,7 +394,7 @@ def copyDevice(sqlite, mysql):
 @clock
 def copyParts(sqlite, mysql):
     tableName = 'DM_PARTS'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -166,7 +414,7 @@ def copyParts(sqlite, mysql):
 @clock
 def copyFlAsset(sqlite, mysql):
     tableName = 'DM_FL_ASSET'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -186,7 +434,7 @@ def copyFlAsset(sqlite, mysql):
 @clock
 def copyAssetTechparam(sqlite, mysql):
     tableName = 'DM_A_ASSET'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -206,7 +454,7 @@ def copyAssetTechparam(sqlite, mysql):
 @clock
 def copyClassify(sqlite, mysql):
     tableName = 'DM_CLASSIFY'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -226,7 +474,7 @@ def copyClassify(sqlite, mysql):
 @clock
 def copyTechparam(sqlite, mysql):
     tableName = 'DM_TECHPARAM'
-    #print('do something from %s to %s' % (sqlite, mysql))
+    # print('do something from %s to %s' % (sqlite, mysql))
     # with?
     conn = sqlite3.connect(sqlite)
     cur = conn.cursor()
@@ -240,9 +488,6 @@ def copyTechparam(sqlite, mysql):
     cur.close()
     conn.close()
     return 1
-
-
-MAX_WORKER = 10
 
 
 def do(func):
@@ -368,4 +613,4 @@ def doCoroutineAverager():
 
 if __name__ == '__main__':
     # doOneByOne()
-    doAll()
+    LoadMainTransBill('MT-20170901000001')
