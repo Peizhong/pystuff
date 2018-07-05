@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'learning_logs',
     'users',
-    'mylibrary'
+    'mylibrary',
+    'subscriptions'
 ]
 
 MIDDLEWARE = [
