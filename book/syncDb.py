@@ -2,7 +2,6 @@
 # 多线程
 # 装饰器 不同的表不同的函数，不用关心数据源和目标，装饰后，自动全部执行
 # 接口
-
 import time
 import functools
 from operator import itemgetter, attrgetter
@@ -11,46 +10,40 @@ from concurrent import futures
 from time import sleep, strftime
 
 import sqlite3
-import pymysql
-import pymysql.cursors
 
-import mytoolkit
-
-
-def clock(func):
-    @functools.wraps(func)
-    def clocked(*args, **kwargs):
-        t0 = time.time()
-        res = func(*args, **kwargs)
-        arglist = []
-        if args:
-            arglist.append(', '.join(repr(s) for s in args))
-        if kwargs:
-            paris = ['%s=%r' % (k, w) for k, w in sorted(kwargs.items())]
-            arglist.append(','.join(paris))
-        elapsed = time.time()-t0
-        print('%s(%s): %r' % (func.__name__, arglist, elapsed))
-    return clocked
-
+from mytoolkit import queryConfig, clock
 
 MAX_WORKER = 10
 
 jobToRun = []
-
-sqlitepath = mytoolkit.queryConfig('avmtdb')
-mysqlserver = mytoolkit.queryConfig('host')
+sqlitepath = queryConfig('avmtdb')
+host = queryConfig('host')
 
 
 def sq2mq(func):
     'sqlite->mysql'
     # print('加载时立即执行')
     def connect():
-        res = func(sqlite=sqlitepath, mysql=mysqlserver)
+        # 传参数进去
+        res = func(sqlite=sqlitepath, mysql=host)
+        return res
     jobToRun.append(connect)
     return connect
 
 
-# key值默认按这个排序
+def rd(func):
+    '''
+    插入redis连接信息
+    '''
+    @functools.wraps(func)
+    def connect(**kwargs):
+        kwargs['host'] = host
+        res = func(**kwargs)
+        return res
+    return connect
+
+
+# column值默认按这个排序
 defaultOrder = ['id', 'workspace_id', 'function_location_id', 'asset_id', 'operation_flag', 'update_time',
                 'province_code', 'bureau_code', 'power_grid_flag', 'data_from', 'optimistic_lock_version']
 
@@ -65,6 +58,9 @@ def getIndex(col: str):
 
 
 def insertTable(mysql, tableName, columnInfo, items):
+    import pymysql
+    import pymysql.cursors
+
     dropSql = 'drop table if exists %s' % tableName.lower()
     dropSql = 'drop table if exists %s' % tableName.upper()
     keys = sorted(
@@ -163,6 +159,7 @@ class AssetObjectVO(ABC):
         pass
 
 
+# DeviceObject.__mro__
 class DeviceObjectVO(AssetObjectVO):
     Columns = ('id', 'device_name', 'classify_id',
                'is_share_device', 'update_time')
@@ -266,47 +263,40 @@ def BuildWorkspaceTree(workspace, functions):
     return rootNode
 
 
-conn = None
-cursor = None
-
-
 def LoadDevice(workspaceId: str)->dict:
-    global conn, cursor
-    #conn = sqlite3.connect(sqlitepath)
-    #cursor = conn.cursor()
+    conn = sqlite3.connect(sqlitepath)
+    cursor = conn.cursor()
     columns = columnToQuery(DeviceObjectVO, 'd')
     cursor.execute('select {0} from dm_function_location f, dm_fl_asset fla, dm_device d where f.workspace_id = ? and fla.object_type = 5 and f.id = fla.function_location_id and f.workspace_id = fla.workspace_id and fla.asset_id = d.id and fla.workspace_id = d.workspace_id'.format(
         columns), (workspaceId,))
     devices = {d[0]: DeviceObjectVO.BuildFromRow(d) for d in cursor.fetchall()}
-    # cursor.close()
-    # conn.close()
+    cursor.close()
+    conn.close()
     return devices
 
 
 def LoadParts(workspaceId: str)->dict:
-    global conn, cursor
-    #conn = sqlite3.connect(sqlitepath)
-    #cursor = conn.cursor()
+    conn = sqlite3.connect(sqlitepath)
+    cursor = conn.cursor()
     columns = columnToQuery(PartsObjectVO, 'p')
     cursor.execute('select {0} from dm_function_location f, dm_fl_asset fla, dm_parts p where f.workspace_id = ? and fla.object_type = 6 and f.id = fla.function_location_id and f.workspace_id = fla.workspace_id and fla.asset_id = p.id and fla.workspace_id = p.workspace_id'.format(
         columns), (workspaceId,))
     parts = {p[0]: PartsObjectVO.BuildFromRow(p) for p in cursor.fetchall()}
-    # cursor.close()
-    # conn.close()
+    cursor.close()
+    conn.close()
     return parts
 
 
 def LoadFunctionLocation(workspaceId: str):
-    global conn, cursor
-    #conn = sqlite3.connect(sqlitepath)
-    #cursor = conn.cursor()
+    conn = sqlite3.connect(sqlitepath)
+    cursor = conn.cursor()
     columns = columnToQuery(FunctionLocationVO, 'f')
     cursor.execute('select {0} from dm_function_location f left join dm_fl_asset fla on f.id = fla.function_location_id where f.workspace_id = ?'.format(
         columns,), (workspaceId,))
     functionlocations = tuple(FunctionLocationVO.BuildFromRow(f)
                               for f in cursor.fetchall())
-    # cursor.close()
-    # conn.close()
+    cursor.close()
+    conn.close()
     devices = LoadDevice(workspaceId)
     parts = LoadParts(workspaceId)
     SetFunctionLocationAsset(functionlocations, devices, parts)
@@ -318,7 +308,6 @@ def LoadFunctionLocation(workspaceId: str):
 @clock
 def LoadMainTransBill(businessCode):
     # 查询对应工作区数据
-    global conn, cursor
     conn = sqlite3.connect(sqlitepath)
     cursor = conn.cursor()
     #cursor.execute('select w.id,workspace_name,w.object_id from dm_workspace w, dm_main_transfer m where m.BUSINESS_BILL_CODE = ? and m.id = w.BUSINESS_BILL_ID', (businessCode,))
@@ -611,6 +600,45 @@ def doCoroutineAverager():
     print(getgeneratorstate(coro_avg))
 
 
+@rd
+def redisTest(**kwargs):
+    import redis
+    # 连接池？
+    r = redis.Redis(host=kwargs['host'], port=6379)
+    r.set('hello', 'aad你好吗')
+    v = r.get('hello')
+    str_utf8 = v.decode('utf-8')
+    print(str_utf8)
+
+    # redis key和5种数据类型的映射：string(字符串、整数、浮点)、list链表、set集合、hash散列表(键值对)、zset有序集合
+    # 附加功能：发布/订阅，主从复制、持久化
+    # 字符串
+    r.set('counter', 1)
+    # 计数器
+    r.incr('counter')
+    r.incr('counter')
+    print(r.get('counter'))
+    r.decr('counter')
+    print(r.get('counter'))
+    # list
+    r.rpush('rlist', 'mimi')
+    r.rpush('rlist', 'jj')
+    r.lrange('rlist', 0, -1)
+    r.lindex('rlist', 1)
+    # set
+    r.sadd('rset', '1234')
+    r.sadd('rset', '01234')
+    r.srem('rset', '123')
+    r.sadd('rset', 'mii')
+    r.smembers('rset')
+    r.sismember('rset', '1234')
+    # hash
+    r.hset('rhash', 1, '3234')
+    r.hset('rhash', 2, '3234')
+    r.hgetall('rhash')
+    r.hget('rhash', 1)
+    r.hdel('rhash', 2)
+
+
 if __name__ == '__main__':
-    # doOneByOne()
-    LoadMainTransBill('MT-20170901000001')
+    redisTest()

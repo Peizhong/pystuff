@@ -312,16 +312,19 @@ def make_averager():
 
 
 def clock(func):
-    # 把func属性复制到clocked
     @functools.wraps(func)
-    def clocked(*args):
-        t0 = time.perf_counter()
-        result = func(*args)
-        elapsed = time.perf_counter()-t0
-        name = func.__name__
-        arg_str = ', '.join(repr(arg) for arg in args)
-        print('[%0.8fs] %s(%s) -> %r' % (elapsed, name, arg_str, result))
-        return result
+    def clocked(*args, **kwargs):
+        t0 = time.time()
+        res = func(*args, **kwargs)
+        arglist = []
+        if args:
+            arglist.append(', '.join(repr(s) for s in args))
+        if kwargs:
+            paris = ['%s=%r' % (k, w) for k, w in sorted(kwargs.items())]
+            arglist.append(','.join(paris))
+        elapsed = time.time()-t0
+        print('%s(%s): %r' % (func.__name__, arglist, elapsed))
+        return res
     return clocked
 
 
