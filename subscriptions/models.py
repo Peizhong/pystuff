@@ -21,7 +21,7 @@ class Subscription(models.Model):
         ),
         ('unknown', 'Unknown'),
     )
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     subs_link = models.CharField(max_length=400)
     is_active = models.CharField(
         max_length=2, choices=ACTIVE_CHOICES, default=Active)
