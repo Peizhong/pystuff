@@ -82,28 +82,32 @@ class MyRedis(AbsMemCache):
     pool = redis.ConnectionPool(host=host, port=6379)
 
     def __init__(self):
-        self.conn = redis.Redis(connection_pool=MyRedis.pool)
+        self._conn = redis.Redis(connection_pool=MyRedis.pool)
+
+    @property
+    def conn(self):
+        return self._conn
 
     def get_pipeline(self):
-        p = self.conn.pipeline()
+        p = self._conn.pipeline()
         return p
 
     def set_dict(self, name, items):
-        self.conn.delete(name)
-        p = self.conn.pipeline()
+        self._conn.delete(name)
+        p = self._conn.pipeline()
         for key, value in items.items():
             p.hset(name, repr(key), json.dumps(value))
         p.execute()
 
     def get_dict(self, name):
         values = {}
-        data = self.conn.hgetall(name)
+        data = self._conn.hgetall(name)
         for k, v in data.items():
             values[k.decode()] = v.decode()
         return values
 
     def set_sorted_set(self, name, items):
-        p = self.conn.pipeline()
+        p = self._conn.pipeline()
         for i in items:
             p.zadd(name, i[0], i[1])
         p.execute()

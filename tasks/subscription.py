@@ -1,4 +1,7 @@
 import time
+import re
+import asyncio
+import aiohttp
 from enum import Enum
 from collections import namedtuple
 from concurrent import futures
@@ -135,14 +138,48 @@ def update_subscription_job():
     p = redis.get_pipeline()
     for row in repo:
         p.hset('subscription_job_detail', row['id'], row['subs_link'])
-        p.zadd('subscription_job_todo', row['id'], time.time())
+        p.lpush('subscription_job_todo', row['id'])
     p.execute()
 
 
+loop = asyncio.get_event_loop()
+
+
+@myutils.clock
 def get_subscription_job(length=1):
-    '''从按时间排序的subscription_job_id取出
+    '''从subscription_job_todo取出指定长度的记录
     '''
-    pass
+    redis = myutils.MyRedis()
+    print('current have {} jobs todo and will take {}'.format(
+        redis.conn.llen('subscription_job_todo'), length))
+    p = redis.get_pipeline()
+    # get job id
+    for j in range(length):
+        p.lpop('subscription_job_todo')
+    ids = p.execute()
+    # get job detail
+    jobs = zip(ids, redis.conn.hmget('subscription_job_detail', ids))
+    task = [fetch_webpage(job[1]) for job in jobs]
+    loop.run_until_complete(asyncio.gather(*task))
+    print('done')
+
+
+re_http = re.compile('http://', re.IGNORECASE)
+
+
+async def fetch_webpage(url):
+    if isinstance(url, bytes):
+        url = url.decode()
+    if not re_http.match(url):
+        url = 'http://'+url
+
+    async with aiohttp.ClientSession(loop=loop) as session:
+        async with session.get(url) as html:
+            # print(html.status)
+            response = await html.text(encoding="utf-8")
+            # print(response)
+            print('i got ', url)
+            return response
 
 
 def add_subscription_job(job_ids):

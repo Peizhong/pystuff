@@ -13,12 +13,10 @@ def clock(func):
         res = func(*args, **kwargs)
         arglist = []
         if args:
-            pass
-            #arglist.append(', '.join(repr(s) for s in args))
+            arglist.append(', '.join(repr(s) for s in args))
         if kwargs:
-            pass
-            #paris = ['%s=%r' % (k, w) for k, w in sorted(kwargs.items())]
-            # arglist.append(','.join(paris))
+            paris = ['%s=%r' % (k, w) for k, w in sorted(kwargs.items())]
+            arglist.append(','.join(paris))
         elapsed = time.time()-t0
         print('%s(%s): %r' % (func.__name__, arglist, elapsed))
         return res

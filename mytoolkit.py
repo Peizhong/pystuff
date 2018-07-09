@@ -160,14 +160,15 @@ def readConfig():
     else:
         host = getHost()
         config = {
-            'host': getHost(),
+            'host': host,
             'database': databaseConfig(host),
             'download': getDownloadPath(),
             'fileserver': getFileServer(),
             'emailaccount': getAnswer('Email account'),
-            'emailpasswd': getAnswer('Email password'),
-            'avmtdb': os.path.join(config['download'], 'avmt.db')
+            'emailpasswd': getAnswer('Email password')
         }
+        config['avmtdb'] = os.path.join(config['download'], 'avmt.db')
+
     # 不管有没有改数据，都写一遍
     with open(configpath, "w") as write_f:
         json.dump(config, write_f)
@@ -295,22 +296,6 @@ def testAllConnectivity():
     res = [x() for x in test_connection]
 
 
-def make_averager():
-    '''闭包：函数内部定义函数'''
-    count = 0
-    total = 0
-    # 只有变量：未在本地作用域绑定，即使定义作用域不可用，还是能用
-    series = []
-
-    def averager(new_value):
-        nonlocal count, total
-        series.append(new_value)
-        count += 1
-        total += new_value
-        return total/count
-    return averager
-
-
 def clock(func):
     @functools.wraps(func)
     def clocked(*args, **kwargs):
@@ -328,12 +313,5 @@ def clock(func):
     return clocked
 
 
-@clock
-def test_nolocal():
-    avg = make_averager()
-    print(avg(1))
-    print(avg(10))
-
-
 if __name__ == '__main__':
-    test_nolocal()
+    queryConfig('hello')
