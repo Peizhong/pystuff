@@ -133,16 +133,38 @@ def update_redis_subscription(data):
 
 
 def update_subscription_job():
-    repo = get_mysql_subscription(1000)
+    repo = get_mysql_subscription(50)
     redis = myutils.MyRedis()
     p = redis.get_pipeline()
     for row in repo:
         p.hset('subscription_job_detail', row['id'], row['subs_link'])
-        p.lpush('subscription_job_todo', row['id'])
+        p.rpush('subscription_job_todo', row['id'])
     p.execute()
 
 
+re_http = re.compile('http://', re.IGNORECASE)
+
 loop = asyncio.get_event_loop()
+
+
+async def fetch_webpage(url):
+    if isinstance(url, bytes):
+        url = url.decode()
+    if not re_http.match(url):
+        url = 'http://'+url
+
+    async with aiohttp.ClientSession(loop=loop) as session:
+        async with session.get(url) as html:
+            # print(html.status)
+            response = await html.text(encoding="utf-8")
+            # print(response)
+            print('i got ', url)
+            return response
+
+
+def len_subscription_job():
+    redis = myutils.MyRedis()
+    return redis.conn.llen('subscription_job_todo')
 
 
 @myutils.clock
@@ -162,31 +184,13 @@ def get_subscription_job(length=1):
     task = [fetch_webpage(job[1]) for job in jobs]
     loop.run_until_complete(asyncio.gather(*task))
     print('done')
-
-
-re_http = re.compile('http://', re.IGNORECASE)
-
-
-async def fetch_webpage(url):
-    if isinstance(url, bytes):
-        url = url.decode()
-    if not re_http.match(url):
-        url = 'http://'+url
-
-    async with aiohttp.ClientSession(loop=loop) as session:
-        async with session.get(url) as html:
-            # print(html.status)
-            response = await html.text(encoding="utf-8")
-            # print(response)
-            print('i got ', url)
-            return response
+    return ids
 
 
 def add_subscription_job(job_ids):
-    '''
-    key: job_id
-    value: 时间戳
-    '''
-    value = [(job, time.time()) for job in job_ids]
     redis = myutils.MyRedis()
-    redis.set_sorted_set('subscription_job', value)
+    p = redis.get_pipeline()
+    for id in job_ids:
+        p.rpush('subscription_job_todo', id)
+    p.execute()
+    print('after, have {} jobs todo'.format(len_subscription_job()))
