@@ -49,6 +49,7 @@ class SubscriptionFactory():
             print('start: ', writer.__name__)
             writer(data)
             print('done: ', writer.__name__)
+            # 线程池
         with futures.ThreadPoolExecutor(2) as executor:
             res = executor.map(dowork, self.writer)
         return True
