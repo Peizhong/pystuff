@@ -1,5 +1,3 @@
 {
-    //"python.pythonPath": "${workspaceFolder}/djg/bin/python3"
-    //"python.pythonPath": "${workspaceFolder}/venv/bin/python3"
-    "python.pythonPath": "${workspaceFolder}\\ml\\Scripts\\python.exe"
+    "python.pythonPath": "${workspaceFolder}\\env\\Scripts\\python.exe"
 }

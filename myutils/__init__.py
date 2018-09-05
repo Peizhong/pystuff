@@ -2,9 +2,6 @@ import functools
 import time
 import uuid
 
-from .config import query_config
-from .database import MyMySQL, MyRedis
-
 
 def clock(func):
     @functools.wraps(func)

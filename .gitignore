@@ -84,13 +84,7 @@ celerybeat-schedule.db
 .env
 
 # virtualenv
-.venv
-venv/
 ENV/
-.djg
-djg/
-.ml
-ml/
 
 # Spyder project settings
 .spyderproject
@@ -107,6 +101,3 @@ ml/
 
 # database
 db.sqlite3
-
-# localconfig
-localconfig.json

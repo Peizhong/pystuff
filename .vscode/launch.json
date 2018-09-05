@@ -65,7 +65,8 @@
             "args": [
                 "runserver",
                 "--noreload",
-                "--nothreading"
+                "--nothreading",
+                "8080"
             ],
             "env": {},
             "envFile": "${workspaceFolder}/.env",
