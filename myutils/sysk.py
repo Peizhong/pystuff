@@ -4,7 +4,7 @@ import feedparser
 import collections
 from atexit import register
 from time import ctime
-from urllib import request
+import requests
 
 Pocast = collections.namedtuple(
     'Pocast', ['Title', 'Summary', 'Link', 'UpdateTime'])
@@ -71,14 +71,15 @@ def downloadOnePocast(rss, localpath):
     try:
         encodedName = replace_invalid_filename_char(rss.Title)
         filepath = '%s/%s.mp3' % (localpath, encodedName)
-        header = {
+        headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
         }
-        req = request.Request(rss.Link, headers=header)
-        page = request.urlopen(req)
-        data = page.read()
-        with open(filepath, "wb") as code:
-            code.write(data)
+        print('downloading from: '+rss.Link)
+        r = requests.get(rss.Link,headers=headers, stream=True) # create HTTP response object
+        with open(filepath,'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
         result = filepath
         # todo 数据库记录
     except Exception as e:

@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 
 import time
+from myutils.sysk import checkAndDownloadPocasts
 
 @shared_task
 def downloadPocasts(*args):
@@ -12,4 +13,4 @@ def downloadPocasts(*args):
         print('start download pocasts with args %r at %r'%(strArgs, time.ctime()))
     else:    
         print('start download pocasts at %r'%time.ctime())
-    pass
+    checkAndDownloadPocasts('https://feeds.megaphone.fm/stuffyoushouldknow','downloads')
