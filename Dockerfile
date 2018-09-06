@@ -21,6 +21,7 @@ RUN python3 -m pip install -r requirements.txt
 #RUN apk del gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 manage.py migrate
 #python manage.py createsuperuser??
+#cmd: 容器启动且 docker run 没有指定其他命令时运行
 CMD ["python3","manage.py","runserver","0.0.0.0:8080"]
 
 # Using pipenv:

@@ -1,4 +1,5 @@
 config = {
+    'hosts':['localhost',],
     'celery_broker': 'amqp://rabbit:5672',
     'celery_backend': 'amqp://rabbit:5672',
     'database_sqlite': {
