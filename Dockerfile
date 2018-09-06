@@ -4,7 +4,7 @@
 # OS Support also exists for jessie & stretch (slim and full).
 # See https://hub.docker.com/r/library/python/ for all supported Python
 # tags from Docker Hub.
-FROM python:alpine
+FROM python:3.6-alpine
 
 # If you prefer miniconda:
 #FROM continuumio/miniconda3
@@ -16,9 +16,9 @@ WORKDIR /app
 ADD . /app
 
 # Using pip:
-RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+#RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 -m pip install -r requirements.txt
-RUN apk del gcc musl-dev python3-dev libffi-dev openssl-dev
+#RUN apk del gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 manage.py migrate
 #python manage.py createsuperuser??
 CMD ["python3","manage.py","runserver","0.0.0.0:8080"]

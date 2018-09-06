@@ -41,8 +41,11 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def tell_me():
+    for key in profile:
+        if hasattr(pl, key):
+            print(key + bcolors.BOLD + ": " +
+                str(getattr(pl, key)()) + bcolors.ENDC)
 
-for key in profile:
-    if hasattr(pl, key):
-        print(key + bcolors.BOLD + ": " +
-              str(getattr(pl, key)()) + bcolors.ENDC)
+if __name__=='__main__':
+    tell_me()
