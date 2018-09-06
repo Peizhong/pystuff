@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'podcasts',
     'django_celery_beat',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
