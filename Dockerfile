@@ -16,8 +16,12 @@ WORKDIR /app
 ADD . /app
 
 # Using pip:
+RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 -m pip install -r requirements.txt
-CMD ["python3", "manage.py", "runserver","0.0.0.0:8080"]
+RUN apk del gcc musl-dev python3-dev libffi-dev openssl-dev
+RUN python3 manage.py migrate
+#python manage.py createsuperuser??
+CMD ["python3","manage.py","runserver","0.0.0.0:8080"]
 
 # Using pipenv:
 #RUN python3 -m pip install pipenv

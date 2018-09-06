@@ -2,6 +2,14 @@ import functools
 import time
 import uuid
 
+from .config import config
+
+
+def query_config(name: str):
+    value = config.get(name)
+    print('{} is {}'.format(name, value))
+    return value
+
 
 def clock(func):
     @functools.wraps(func)
