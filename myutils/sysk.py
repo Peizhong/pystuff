@@ -9,6 +9,8 @@ import requests
 Pocast = collections.namedtuple(
     'Pocast', ['Title', 'Summary', 'Link', 'UpdateTime'])
 
+DownloadResult = collections.namedtuple('DownloadResult',['Title', 'Url', 'Result'])
+
 
 def fetchRss(rss):
     feeds = []
@@ -84,7 +86,7 @@ def downloadOnePocast(rss, localpath):
         # todo 数据库记录
     except Exception as e:
         print(e)
-        result = ''
+        result = e
     finally:
         return result
 
@@ -92,24 +94,24 @@ def downloadOnePocast(rss, localpath):
 def checkAndDownloadPocasts(url, downloadpath, maxcount=5):
     print('hello, fetching new pocasts....')
     if not os.path.exists(downloadpath):
-        os.mkdir(downloadpath)
+        os.makedirs(downloadpath)
     feeds = fetchRss(url)
     print("recive %s pocasts" % (len(feeds)))
     newfeeds = whatsNew(feeds, downloadpath)
     newfeedsLen = len(newfeeds)
     print("found %s new pocasts" % (newfeedsLen))
+    result = []
     while maxcount > 0:
         maxcount = maxcount-1
-        try:
-            todo = newfeeds[maxcount]
-            downloadOnePocast(todo, downloadpath)
-        except Exception as e:
-            print(e)
+        todo = newfeeds[maxcount]
+        res = downloadOnePocast(todo, downloadpath)
+        result.append(DownloadResult(todo.Title,todo.Link,res))
+    return result
 
 
 def main():
     url = 'https://feeds.megaphone.fm/stuffyoushouldknow'
-    checkAndDownloadPocasts(url, 'downloads')
+    checkAndDownloadPocasts(url, 'downloads/sysk')
 
 
 if(__name__ == '__main__'):

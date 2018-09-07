@@ -7,10 +7,10 @@ from .config import config
 
 def self_check():
     #directory to ensure
-    dirs = ('logs','downloads')
+    dirs = ('logs',)
     def mkdir(path):
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
     for d in dirs:
         mkdir(d)
     #os info

@@ -13,4 +13,6 @@ def downloadPocasts(*args):
         print('start download pocasts with args %r at %r'%(strArgs, time.ctime()))
     else:    
         print('start download pocasts at %r'%time.ctime())
-    checkAndDownloadPocasts('https://feeds.megaphone.fm/stuffyoushouldknow','downloads')
+    result = checkAndDownloadPocasts('https://feeds.megaphone.fm/stuffyoushouldknow','downloads/sysk')
+    print('download pocasts result: %r'%result)
+    return result
