@@ -115,7 +115,7 @@ def updateLocalPocastList(podcasts:list, downloadpath:str):
         pipe.rpush('podcasts',p.toJSON())
     pipe.execute()
 
-def checkAndDownloadpodcasts(url, downloadpath, maxcount=1):
+def checkAndDownloadPodcasts(url, downloadpath, maxcount=1):
     print('hello, fetching new podcasts....')
     if not os.path.exists(downloadpath):
         os.makedirs(downloadpath)
@@ -137,7 +137,7 @@ def checkAndDownloadpodcasts(url, downloadpath, maxcount=1):
 
 def main():
     url = 'https://feeds.megaphone.fm/stuffyoushouldknow'
-    checkAndDownloadpodcasts(url, 'downloads/sysk')
+    checkAndDownloadPodcasts(url, 'downloads/sysk')
 
 
 if(__name__ == '__main__'):
