@@ -20,5 +20,4 @@ from django.conf.urls import url  #这行
 urlpatterns = [
     path('podcasts/', include('podcasts.urls')),
     path('admin/', admin.site.urls),
-    url(r'^$', include('podcasts.urls')),
 ]
