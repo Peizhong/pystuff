@@ -13,5 +13,9 @@ config = {
         "PASSWORD": "mypass",
         "HOST": "localhost",
         "PORT": "3306"
+    },
+    'redis_connection':{
+        'host':'localhost',
+        'password':'password'
     }
 }

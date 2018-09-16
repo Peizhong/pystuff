@@ -3,14 +3,23 @@ import sys
 import feedparser
 import collections
 from atexit import register
-from time import ctime
+import time
 import requests
+import redis
+import json
+from myutils import query_config
 
-Pocast = collections.namedtuple(
-    'Pocast', ['Title', 'Summary', 'Link', 'UpdateTime'])
 
-DownloadResult = collections.namedtuple('DownloadResult',['Title', 'Url', 'Result'])
+class Podcast:
+    def __init__(self,title,summary,link,publishdate,downloadresult):
+        self.Title = title
+        self.Summary = summary
+        self.Link = link
+        self.PublishDate = time.strftime("%Y-%m-%d %H:%M:%S",publishdate)
+        self.DownloadResult = downloadresult
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
 
 def fetchRss(rss):
     feeds = []
@@ -23,7 +32,8 @@ def fetchRss(rss):
                 break
         if not link:
             continue
-        feeds.append(Pocast(s.title, s.summary, link, s.updated))
+        #feeds.append(Pocast(s.title, s.subtitle, link, time.strftime("%Y-%m-%d %H:%M:%S",s.published_parsed,''))
+        feeds.append(Podcast(s.title, s.subtitle, link,s.published_parsed,''))
     # byd = sorted(feeds, key=lambda s: s['UpdateTime'], reverse=True)
     # return byd[:5]
     return feeds[:100]
@@ -79,39 +89,55 @@ def downloadOnePocast(rss, localpath):
         print('downloading from: '+rss.Link)
         r = requests.get(rss.Link,headers=headers, stream=True) # create HTTP response object
         with open(filepath,'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
+            for chunk in r.iter_content(chunk_size=4096):
                 if chunk:
                     f.write(chunk)
         result = filepath
-        # todo 数据库记录
     except Exception as e:
         print(e)
-        result = e
+        result = 'error: %s'%e
     finally:
         return result
 
+def updateLocalPocastList(podcasts:list, downloadpath:str):
+    for p in podcasts:
+        if p.DownloadResult:
+            continue
+        encodedName = replace_invalid_filename_char(p.Title)
+        filepath = '%s/%s.mp3' % (downloadpath, encodedName)
+        if os.path.exists(filepath):
+            p.DownloadResult = filepath
+    redis_config = query_config('redis_connection')
+    conn = redis.Redis(host=redis_config['host'],port=6379,password=redis_config['password'],decode_responses=True)
+    conn.delete('podcasts')
+    pipe = conn.pipeline()
+    for p in podcasts:
+        pipe.rpush('podcasts',p.toJSON())
+    pipe.execute()
 
-def checkAndDownloadPocasts(url, downloadpath, maxcount=5):
-    print('hello, fetching new pocasts....')
+def checkAndDownloadpodcasts(url, downloadpath, maxcount=1):
+    print('hello, fetching new podcasts....')
     if not os.path.exists(downloadpath):
         os.makedirs(downloadpath)
-    feeds = fetchRss(url)
-    print("recive %s pocasts" % (len(feeds)))
-    newfeeds = whatsNew(feeds, downloadpath)
+    podcasts = fetchRss(url)
+    #updateLocalPocastList(podcasts, downloadpath)
+    print("recive %s podcasts" % (len(podcasts)))
+    newfeeds = whatsNew(podcasts, downloadpath)
     newfeedsLen = len(newfeeds)
-    print("found %s new pocasts" % (newfeedsLen))
-    result = []
+    print("found %s new podcasts" % (newfeedsLen))
+    downloadResult = []
     while maxcount > 0:
         maxcount = maxcount-1
         todo = newfeeds[maxcount]
-        res = downloadOnePocast(todo, downloadpath)
-        result.append(DownloadResult(todo.Title,todo.Link,res))
-    return result
+        oneResult = downloadOnePocast(todo, downloadpath)
+        downloadResult.append((todo.Title,todo.Link,oneResult))
+    updateLocalPocastList(podcasts, downloadpath)
+    return downloadResult
 
 
 def main():
     url = 'https://feeds.megaphone.fm/stuffyoushouldknow'
-    checkAndDownloadPocasts(url, 'downloads/sysk')
+    checkAndDownloadpodcasts(url, 'downloads/sysk')
 
 
 if(__name__ == '__main__'):
@@ -121,4 +147,4 @@ if(__name__ == '__main__'):
 @register
 def _atexit():
     # 脚本退出前执行这个函数
-    print('sysk srcript end at ' + ctime())
+    print('sysk srcript end at ' + time.ctime())
