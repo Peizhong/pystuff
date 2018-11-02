@@ -1,0 +1,13 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static "css/bootstrap.css" %}" />
+
+{% if latest_podcasts_list %}
+    <ul>
+    {% for question in latest_podcasts_list %}
+        <li><a href={{question.Link}}>{{ question.Title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No podcasts are available.</p>
+{% endif %}
