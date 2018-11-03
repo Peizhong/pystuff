@@ -5,7 +5,6 @@ from . import views
 app_name = 'podcasts'
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
-    path('podcasts/<int:page>/', views.podcasts, name='podcasts'),
-    path('whatsup', views.whatsup, name='whatsup'),
-    path('downloaded', views.downloaded, name='downloaded')
+    path('index', views.IndexView.as_view(), name='index'),
+    path('downloaded', views.DownloadedView.as_view(), name='downloaded'),  
 ]

@@ -1,13 +1,118 @@
-{% load static %}
+{% extends 'share.html' %}
+{% block pocasts_list %}
+<div>
+    <button id='btnDownload' class="btn btn-primary" disabled="disabled">Download</button>
+</div>
+<div id='tablePodcast' class="table-responsive">
+    <form action="{% url 'podcasts:index' %}" method="post">
+        {% csrf_token %}
+        <table class="table">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">
+                        <div class="form-check">
+                            <input class="form-check-input position-static chkDownload-all" type="checkbox" id={{podcast.id}} value="option1"
+                                aria-label="...">
+                        </div>
+                    </th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Release</th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% for podcast in latest_podcasts_list %}
+                <tr {% if podcast.Status == 3 %}
+                        class="table-success"
+                    {% elif podcast.Status == 1 %}
+                        class="table-warning"
+                    {% endif %}>
+                    <th>
+                        {% if podcast.Status != 3 and podcast.Status != 1 %}
+                        <div class="form-check">
+                            <input class="form-check-input position-static chkDownload" type="checkbox" id={{podcast.id}} value="option1"
+                                aria-label="...">
+                        </div>
+                        {% endif %}
+                    </th>
+                    <td>
+                        <a tabindex="0" data-toggle="popover" data-trigger="focus" title="Detail" 
+                        data-content="{{ podcast.Summary }}" data-html=true>{{ podcast.Title }}</a>
+                    </td>
+                    <td>{{ podcast.PublishDate }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
 
-<link rel="stylesheet" href="{% static "css/bootstrap.css" %}" />
+<script>
+    $(function () {
+        console.log('hello i am in index')
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        })
+        clearCheckFile()
+        setDownloadBtnStatus()
+    })
 
-{% if latest_podcasts_list %}
-    <ul>
-    {% for question in latest_podcasts_list %}
-        <li><a href={{question.Link}}>{{ question.Title }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No podcasts are available.</p>
-{% endif %}
+    const clearCheckFile = ()=>{
+        $(".chkDownload").prop("checked",false);
+    }
+
+    const setDownloadBtnStatus = ()=> {
+        const count = $("input:checkbox:checked").length
+        $('#btnDownload').attr("disabled",count<1)
+        //$('#btnDownload').show()
+        $('#btnDownload').text(`Download ${count} file${count>1?'s':''}`)
+    }
+
+    $(".chkDownload").click(()=> {
+        const uncheckCount = $(".chkDownload:not(:checked)").length
+        const checkCount = $(".chkDownload:checked").length
+        $(".chkDownload-all").prop("checked",uncheckCount==0);
+
+        setDownloadBtnStatus()
+    })
+
+    $(".chkDownload-all").click(()=> {
+        const uncheckCount = $(".chkDownload:not(:checked)").length
+        const checkCount = $(".chkDownload:checked").length
+        if(checkCount==0){
+            $(".chkDownload").prop("checked",true);
+        }
+        else if(uncheckCount==0){
+            $(".chkDownload").prop("checked",false);
+        }
+        else{
+            $(".chkDownload").prop("checked",true);
+        }
+
+        setDownloadBtnStatus()
+    })
+
+    $("#btnDownload").click(()=>{
+        const id_array=[]
+        $(".chkDownload:checked").each(function(){
+                id_array.push($(this).attr('id'));
+            }
+        )
+        const ids = id_array.join(',');
+        $.post("",{"ids":ids},(data)=>{
+            console.log(data)
+            if(data==='ok'){
+                window.location.reload()
+            }
+        });
+    })
+
+    $('.popover-dismiss').popover({
+        trigger: 'focus'
+    })
+</script>
+{% endblock %}
+
+
+{% block status_message %}
+ can you see me?
+{% endblock %}

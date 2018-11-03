@@ -1,0 +1,55 @@
+{% extends 'share.html' %}
+{% block pocasts_list %}
+<div id='musicBar'>
+    <audio controls="controls" id="musicPlayer">
+            Your browser does not support this audio format.
+    </audio>
+    <br/>
+    <button class="btn btn-primary" href="#">下载</button>
+</div>
+<div id='tablePodcast' class="table-responsive">
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Sumarry</th>
+                <th scope="col">Release</th>
+                <th scope="col">Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for podcast in latest_podcasts_list %}
+            <tr>
+                <td>{{ podcast.Title }}</td>
+                <td>
+                    <div>
+                        {{ podcast.Summary | safe}}
+                    </div>
+                </td>
+                <td>{{ podcast.PublishDate }}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-success btnPlay" value="{{ podcast.Link }}">播放</button>
+                        <a class="btn btn-primary" href="{{ podcast.Link }}">下载</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(() => {
+        $('.btnPlay').click(function () {
+            const link = $(this).val()
+            $('#musicPlayer').prop('src',link)
+            $('#musicPlayer')[0].play()
+        }) 
+    });
+</script>
+{% endblock %}
+
+{% block status_message %}
+
+{% endblock %}

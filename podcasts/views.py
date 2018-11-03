@@ -1,40 +1,12 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import generic
+from django.db.models import Q
+
 from .models import Podcast
-import redis
-import json
-import time
-import myutils
-import myutils.sysk
+from .tasks import updateFileInfo
 
-
-pagesize = 20
-
-
-def podcasts(request, page=0):
-    redis_config = myutils.query_config('redis_connection')
-    conn = redis.Redis(host=redis_config['host'], port=6379,
-                       password=redis_config['password'], decode_responses=True)
-    ps = {}
-    ps['length'] = conn.llen('podcasts')
-    ls = conn.lrange('podcasts', page*pagesize, (page+1)*pagesize)
-    dt = []
-    for p in ls:
-        j = json.loads(p)
-        dt.append(j)
-        # dt.append(myutils.sysk.Podcast(p['Title'],p['Summary'],p['Link'],p['PublishDate'],p['DownloadResult']))
-    ps['items'] = dt
-    return HttpResponse(json.dumps(ps), content_type='application/json', status=200)
-
-
-def whatsup(request):
-    latest_podcasts_list = Podcast.objects.order_by('-PublishDate')[:10]
-    context = {
-        'latest_podcasts_list': latest_podcasts_list,
-    }
-    return render(request, 'podcasts/index.html', context)
-
+updateFileInfo()
 
 class IndexView(generic.ListView):
     template_name = 'podcasts/index.html'
@@ -42,8 +14,22 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         """Return the last five published questions."""
-        return Podcast.objects.order_by('-PublishDate')[:10]
+        return Podcast.objects.order_by('-PublishDate')[:100]
+        
+    def post(self, request):
+        try:
+            data = request.POST['ids']
+            ids = data.split(',')
+            Podcast.objects.filter(pk__in=ids).filter(~Q(Status=3)).update(Status=1)
+            return HttpResponse("ok")
+        except Exception:
+            return HttpResponse("error")
 
+class DownloadedView(generic.ListView):
+    template_name = 'podcasts/downloaded.html'
+    context_object_name = 'latest_podcasts_list'
 
-def downloaded(request):
-    return HttpResponse("these ara downloaded files")
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Podcast.objects.filter(Status=3).order_by('-PublishDate')[:100]
+

@@ -5,9 +5,9 @@ import collections
 from atexit import register
 import time
 import requests
-import redis
 import json
-from myutils import query_config
+
+from myutils import query_config, replace_invalid_filename_char
 
 
 class Podcast:
@@ -33,25 +33,10 @@ def fetchRss(rss):
         if not link:
             continue
         #feeds.append(Pocast(s.title, s.subtitle, link, time.strftime("%Y-%m-%d %H:%M:%S",s.published_parsed,''))
-        feeds.append(Podcast(s.title, s.subtitle, link,s.published_parsed,''))
+        feeds.append(Podcast(s.title, s.summary, link,s.published_parsed,''))
     # byd = sorted(feeds, key=lambda s: s['UpdateTime'], reverse=True)
     # return byd[:5]
     return feeds[:100]
-
-
-def replace_invalid_filename_char(filename, replaced_char='_'):
-    '''Replace the invalid characaters in the filename with specified characater.
-    The default replaced characater is '_'.
-    e.g.
-    C/C++ -> C_C++
-    '''
-    valid_filename = filename
-    invalid_characaters = '\\/:*?"<>|'
-    for c in invalid_characaters:
-        # print 'c:', c
-        valid_filename = valid_filename.replace(c, replaced_char)
-
-    return valid_filename
 
 
 def whatsNew(feeds, localpath):
@@ -78,27 +63,23 @@ def whatsNew(feeds, localpath):
 
 
 def downloadOnePocast(rss, localpath):
-    '''return file path'''
+    '''return file path, may excepetion'''
     result = ''
-    try:
-        encodedName = replace_invalid_filename_char(rss.Title)
-        filepath = '%s/%s.mp3' % (localpath, encodedName)
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
-        }
-        print('downloading from: '+rss.Link)
-        r = requests.get(rss.Link,headers=headers, stream=True) # create HTTP response object
-        with open(filepath,'wb') as f:
-            for chunk in r.iter_content(chunk_size=4096):
-                if chunk:
-                    f.write(chunk)
-        result = filepath
-    except Exception as e:
-        print(e)
-        result = 'error: %s'%e
-    finally:
-        return result
+    encodedName = replace_invalid_filename_char(rss.Title)
+    filepath = '%s/%s.mp3' % (localpath, encodedName)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
+    }
+    print('downloading from: '+rss.Link)
+    r = requests.get(rss.Link,headers=headers, stream=True) # create HTTP response object
+    with open(filepath,'wb') as f:
+        for chunk in r.iter_content(chunk_size=4096):
+             if chunk:
+                f.write(chunk)
+    result = filepath
+    return result
 
+'''
 def updateLocalPocastList(podcasts:list, downloadpath:str):
     for p in podcasts:
         if p.DownloadResult:
@@ -114,6 +95,7 @@ def updateLocalPocastList(podcasts:list, downloadpath:str):
     for p in podcasts:
         pipe.rpush('podcasts',p.toJSON())
     pipe.execute()
+'''
 
 def checkAndDownloadPodcasts(url, downloadpath, maxcount=1):
     print('hello, fetching new podcasts....')
@@ -131,7 +113,7 @@ def checkAndDownloadPodcasts(url, downloadpath, maxcount=1):
         todo = newfeeds[maxcount]
         oneResult = downloadOnePocast(todo, downloadpath)
         downloadResult.append((todo.Title,todo.Link,oneResult))
-    updateLocalPocastList(podcasts, downloadpath)
+    #updateLocalPocastList(podcasts, downloadpath)
     return downloadResult
 
 
