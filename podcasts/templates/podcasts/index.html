@@ -27,7 +27,7 @@
                         class="table-warning"
                     {% endif %}>
                     <th>
-                        {% if podcast.Status != 3 and podcast.Status != 1 %}
+                        {% if podcast.Status != 3 and podcast.Status != 1 and podcast.Status != 2 %}
                         <div class="form-check">
                             <input class="form-check-input position-static chkDownload" type="checkbox" id={{podcast.id}} value="option1"
                                 aria-label="...">
