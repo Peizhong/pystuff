@@ -5,7 +5,7 @@ config = {
         'log': 'log',
         'sysk': 'downloads/sysk/'
     },
-    'celery_broker': 'pyamqp://guest@192.168.1.108//',
+    'celery_broker': 'pyamqp://192.168.1.108//',
     'celery_backend': 'django-db',
     'redis_connection': {
         'host': 'redis',
