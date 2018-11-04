@@ -10,4 +10,4 @@ celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:Databas
 
 # docker
 docker build -t pystuff:v0 .
-docker run --name pystuff -d -p 8085:8080 -v /home/peizhong/downloads:/app/downloads pystuff:v1
+docker run --name pystuff -d --link rabbitmq:rabbit -p 8085:8080 -v /home/peizhong/downloads:/app/downloads pystuff:v1
