@@ -12,22 +12,26 @@ FROM python:3.6-alpine
 LABEL Name=pystuff Version=0.0.1
 EXPOSE 8080
 
+ENV ENV="production"
+
 WORKDIR /app
 ADD . /app
 
 # Using pip:
 #RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
-RUN python3 -m pip install -r requirements.txt
-#RUN apk del gcc musl-dev python3-dev libffi-dev openssl-dev
-RUN python3 manage.py migrate
-#python manage.py createsuperuser??
-#cmd: 容器启动且 docker run 没有指定其他命令时运行
-CMD ["python3","manage.py","runserver","0.0.0.0:8080"]
+#RUN python3 -m pip install -r requirements.txt
 
 # Using pipenv:
-#RUN python3 -m pip install pipenv
-#RUN pipenv install --ignore-pipfile
-#CMD ["pipenv", "run", "python3", "-m", "pystuff"]
+RUN python3 -m pip install pipenv
+RUN pipenv install
+# pipenv install –dev
+
+RUN python3 manage.py migrate
+#python manage.py createsuperuser
+RUN echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@example.com', 'admin')" | python manage.py shell
+
+#cmd: 如果 docker run 指定了其他命令，CMD 指定的默认命令将被忽略，只有最后一个 CMD 有效
+ENTRYPOINT ["pipenv", "run", "python3","manage.py","runserver","0.0.0.0:8080"]
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml

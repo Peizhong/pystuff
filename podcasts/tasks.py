@@ -17,13 +17,10 @@ from myutils.sysk import fetchRss, downloadOnePocast, checkAndDownloadPodcasts
 
 
 MAX_AUTO_DOWNLOAD = 3
-DOWNLOAD_PATH = 'downloads/sysk'
-
+DOWNLOAD_PATH = query_config('path').get('sysk')
 FILE_SERVER = query_config('file_server')
 ADVERTISING = '<br><br>Learn more about advertising on the HowStuffWorks podcasts at'
 
-if not os.path.exists(DOWNLOAD_PATH):
-    os.makedirs(DOWNLOAD_PATH)
 
 @shared_task
 def updateFileInfo():

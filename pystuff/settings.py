@@ -24,7 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '0en)m82@qr^+(-64v#vj5xg+ye%5=n8tfnl8^_qsjpwe2)de^q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ENV_PROFILE = os.getenv('ENV')
+DEBUG = True if ENV_PROFILE == 'production' else False
+print('DEBUG = %s'%DEBUG)
 
 myutils.self_check()
 

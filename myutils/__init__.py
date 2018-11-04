@@ -5,17 +5,19 @@ import uuid
 
 from .config import config
 
-def self_check():
-    #directory to ensure
-    dirs = ('logs',)
-    def mkdir(path):
-        if not os.path.exists(path):
-            os.makedirs(path)
-    for d in dirs:
-        mkdir(d)
-    #os info
-    from .osinfo import tell_me
-    tell_me()
+def makeDir(path):
+    # 去除首位空格
+    path = path.strip()
+    # 去除尾部 / 符号
+    path = path.rstrip("/")
+    # 判断路径是否存在
+    isExists = os.path.exists(path)
+    if not isExists:
+        # 创建目录操作函数
+        os.makedirs(path)
+        return True
+    else:
+        return False
 
 
 def query_config(name: str):
@@ -58,3 +60,12 @@ def replace_invalid_filename_char(filename, replaced_char='_'):
         valid_filename = valid_filename.replace(c, replaced_char)
 
     return valid_filename
+
+def self_check():
+    #directory to ensure
+    dirs = query_config('path').values()
+    for d in dirs:
+        makeDir(d)
+    #os info
+    from .osinfo import tell_me
+    tell_me()

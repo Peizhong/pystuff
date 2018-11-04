@@ -6,7 +6,7 @@ from django.db.models import Q
 from .models import Podcast
 from .tasks import updateFileInfo
 
-updateFileInfo()
+#updateFileInfo()
 
 class IndexView(generic.ListView):
     template_name = 'podcasts/index.html'
