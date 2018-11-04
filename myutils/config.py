@@ -1,5 +1,5 @@
 config = {
-    'hosts': ['localhost', 'http://192.168.1.100/'],
+    'hosts': ['localhost', '192.168.1.100', '192.168.1.108'],
     'file_server': 'http://192.168.1.100/',
     'path': {
         'log': 'log',

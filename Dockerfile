@@ -30,11 +30,12 @@ RUN pipenv run python manage.py migrate
 #python manage.py createsuperuser
 RUN echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@example.com', 'admin')" | pipenv run python manage.py shell
 
-RUN pipenv run celery -A pystuff worker --pool=solo --purge -l info --detach
-RUN pipenv run celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach
+#RUN pipenv run celery -A pystuff worker --pool=solo --purge -l info --detach
+#RUN pipenv run celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach
 
 #cmd: 如果 docker run 指定了其他命令，CMD 指定的默认命令将被忽略，只有最后一个 CMD 有效
-ENTRYPOINT ["pipenv", "run", "python3","manage.py","runserver","0.0.0.0:8080"]
+#ENTRYPOINT ["pipenv", "run", "python3","manage.py","runserver","0.0.0.0:8080"]
+CMD ["pipenv run celery -A pystuff worker --pool=solo --purge -l info --detach & pipenv run celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & pipenv run python3 manage.py runserver 0.0.0.0:8080"]
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
