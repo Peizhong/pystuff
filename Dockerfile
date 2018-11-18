@@ -17,11 +17,12 @@ ENV ENV="production"
 WORKDIR /app
 ADD . /app
 
-RUN apk add --update bash nginx
+RUN apk add --update bash nginx gcc build-base linux-headers 
 
 # Using pip:
 #RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install setuptools 
 RUN python3 -m pip install uwsgi
 
 # Using pipenv:
@@ -42,7 +43,10 @@ RUN echo "from django.contrib.auth.models import User; User.objects.create_super
 
 COPY nginx-default /etc/nginx/sites-available/default
 
-CMD uwsgi --ini uwsgi.ini & /usr/sbin/nginx
+RUN mkdir /var/run/nginx
+RUN touch /var/run/nginx/nginx.pid
+
+CMD /usr/sbin/nginx & uwsgi --ini uwsgi.ini
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
