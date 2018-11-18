@@ -15,6 +15,11 @@ docker run --name pystuff -d --link rabbitmq:rabbit -p 8085:8080 -v /home/peizho
 # nginx 
 nginx -t
 server {
-    uwsgi_pass 127.0.0.1:8080;
-    include uwsgi_params;
+    listen       80;
+    server_name  localhost;
+    
+    location / {
+        uwsgi_pass 127.0.0.1:8080;
+        include uwsgi_params;
+    }
 }
