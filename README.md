@@ -19,7 +19,10 @@ server {
     server_name  localhost;
     
     location / {
-        uwsgi_pass 127.0.0.1:8080;
+        uwsgi_pass 172.17.0.4:8080;
         include uwsgi_params;
+    }
+    location /static/ {
+        alias /app/pystuff/static/;
     }
 }

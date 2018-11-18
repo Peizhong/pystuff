@@ -10,25 +10,28 @@ FROM python:3.6-alpine
 #FROM continuumio/miniconda3
 
 LABEL Name=pystuff Version=0.0.1
-EXPOSE 8080
+EXPOSE 80
 
 ENV ENV="production"
 
 WORKDIR /app
 ADD . /app
 
+RUN apk add --update bash nginx
+
 # Using pip:
 #RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install uwsgi
 
 # Using pipenv:
 #RUN python3 -m pip install pipenv
 #RUN pipenv install
 # pipenv install –dev
 
-#RUN pipenv run python manage.py migrate
+RUN python manage.py migrate
 #python manage.py createsuperuser
-#RUN echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@example.com', 'admin')" | pipenv run python manage.py shell
+RUN echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@example.com', 'admin')" | python manage.py shell
 
 #RUN pipenv run celery -A pystuff worker --pool=solo --purge -l info --detach
 #RUN pipenv run celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach
@@ -37,7 +40,9 @@ RUN python3 -m pip install -r requirements.txt
 #ENTRYPOINT ["pipenv", "run", "python3","manage.py","runserver","0.0.0.0:8080"]
 #CMD pipenv run celery -A pystuff worker --pool=solo --purge -l info --detach & pipenv run celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & pipenv run python3 manage.py runserver 0.0.0.0:8080
 
-CMD uwsgi --ini uwsgi.ini
+COPY nginx-default /etc/nginx/sites-available/default
+
+CMD uwsgi --ini uwsgi.ini & /usr/sbin/nginx
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
