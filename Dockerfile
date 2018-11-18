@@ -41,12 +41,12 @@ RUN echo "from django.contrib.auth.models import User; User.objects.create_super
 #ENTRYPOINT ["pipenv", "run", "python3","manage.py","runserver","0.0.0.0:8080"]
 #CMD pipenv run celery -A pystuff worker --pool=solo --purge -l info --detach & pipenv run celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & pipenv run python3 manage.py runserver 0.0.0.0:8080
 
-COPY nginx-default /etc/nginx/sites-available/default
+COPY nginx-default /etc/nginx/conf.d/default.conf
 
 RUN mkdir /var/run/nginx
 RUN touch /var/run/nginx/nginx.pid
 
-CMD /usr/sbin/nginx & uwsgi --ini uwsgi.ini
+CMD celery -A pystuff worker --pool=solo --purge -l info --detach & celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & /usr/sbin/nginx & uwsgi --ini uwsgi.ini
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
