@@ -57,6 +57,10 @@ server {
 	location /static/ {
 		alias /app/static/;
 	}
+	
+    location /downloads/ {
+        alias /app/downloads/;
+    }
 
 	# pass PHP scripts to FastCGI server
 	#
