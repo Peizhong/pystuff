@@ -25,7 +25,7 @@ SECRET_KEY = '0en)m82@qr^+(-64v#vj5xg+ye%5=n8tfnl8^_qsjpwe2)de^q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ENV_PROFILE = os.getenv('ENV')
-DEBUG = True if ENV_PROFILE == 'production' else False
+DEBUG = False if ENV_PROFILE == 'production' else True
 print('DEBUG = %s'%DEBUG)
 
 myutils.self_check()
@@ -130,5 +130,5 @@ STATIC_URL = '/static/'
 # python manage.py collectstatic
 # STATIC_ROOT=  os.path.join(BASE_DIR, 'static/')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static/')
+    os.path.join(BASE_DIR, 'static')
 ]

@@ -1,5 +1,5 @@
 {% extends 'share.html' %}
-{% block pocasts_list %}
+{% block podcasts_list %}
 <div id='musicBar'>
     <audio controls="controls" id="musicPlayer">
             Your browser does not support this audio format.
@@ -14,7 +14,7 @@
                 <th scope="col">Title</th>
                 <th scope="col">Sumarry</th>
                 <th scope="col">Release</th>
-                <th scope="col">Download</th>
+                <th scope="col">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -31,6 +31,7 @@
                     <div class="btn-group">
                         <button class="btn btn-success btnPlay" value="{{ podcast.Link }}">播放</button>
                         <a class="btn btn-primary" href="{{ podcast.Link }}">下载</a>
+                        <button class="btn btn-danger btnDelete" value="{{ podcast.Title }}">删除</button>
                     </div>
                 </td>
             </tr>
@@ -39,14 +40,28 @@
     </table>
 </div>
 
-<script>
-    $(() => {
-        $('.btnPlay').click(function () {
-            const link = $(this).val()
-            $('#musicPlayer').prop('src',link)
-            $('#musicPlayer')[0].play()
-        }) 
-    });
+<script>    
+    $(document).ready(function () {
+        $.ajaxSetup({
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
+        })
+    })
+
+    $('.btnPlay').click(function () {
+        const link = $(this).val()
+        $('#musicPlayer').prop('src', link)
+        $('#musicPlayer')[0].play()
+    })
+
+    $(".btnDelete").click(function () {
+        const title = $(this).val()
+        $.post("delete", { 'title': title }, (data) => {
+            console.log(`post download result: ${data}`)
+            if (data === 'ok') {
+                window.location.reload()
+            }
+        });
+    })
 </script>
 {% endblock %}
 

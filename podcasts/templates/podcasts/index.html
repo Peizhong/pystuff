@@ -1,5 +1,5 @@
 {% extends 'share.html' %}
-{% block pocasts_list %}
+{% block podcasts_list %}
 <div>
     <button id='btnDownload' class="btn btn-primary" disabled="disabled">Download</button>
 </div>
@@ -47,60 +47,60 @@
 </div>
 
 <script>
-    $(function () {
-        console.log('hello i am in index')
+    $(document).ready(function () {
         $.ajaxSetup({
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
         })
         clearCheckFile()
         setDownloadBtnStatus()
     })
 
-    const clearCheckFile = ()=>{
-        $(".chkDownload").prop("checked",false);
+    const clearCheckFile = () => {
+        $(".chkDownload-all").prop("checked", false);
+        $(".chkDownload").prop("checked", false);
     }
 
-    const setDownloadBtnStatus = ()=> {
+    const setDownloadBtnStatus = () => {
         const count = $("input:checkbox:checked").length
-        $('#btnDownload').attr("disabled",count<1)
+        $('#btnDownload').attr("disabled", count < 1)
         //$('#btnDownload').show()
-        $('#btnDownload').text(`Download ${count} file${count>1?'s':''}`)
+        $('#btnDownload').text(`Download ${count} file${count > 1 ? 's' : ''}`)
     }
 
-    $(".chkDownload").click(()=> {
+    $(".chkDownload").click(() => {
         const uncheckCount = $(".chkDownload:not(:checked)").length
         const checkCount = $(".chkDownload:checked").length
-        $(".chkDownload-all").prop("checked",uncheckCount==0);
+        $(".chkDownload-all").prop("checked", uncheckCount == 0);
 
         setDownloadBtnStatus()
     })
 
-    $(".chkDownload-all").click(()=> {
+    $(".chkDownload-all").click(() => {
         const uncheckCount = $(".chkDownload:not(:checked)").length
         const checkCount = $(".chkDownload:checked").length
-        if(checkCount==0){
-            $(".chkDownload").prop("checked",true);
+        if (checkCount == 0) {
+            $(".chkDownload").prop("checked", true);
         }
-        else if(uncheckCount==0){
-            $(".chkDownload").prop("checked",false);
+        else if (uncheckCount == 0) {
+            $(".chkDownload").prop("checked", false);
         }
-        else{
-            $(".chkDownload").prop("checked",true);
+        else {
+            $(".chkDownload").prop("checked", true);
         }
 
         setDownloadBtnStatus()
     })
 
-    $("#btnDownload").click(()=>{
-        const id_array=[]
-        $(".chkDownload:checked").each(function(){
-                id_array.push($(this).attr('id'));
-            }
+    $("#btnDownload").click(() => {
+        const id_array = []
+        $(".chkDownload:checked").each(function () {
+            id_array.push($(this).attr('id'));
+        }
         )
         const ids = id_array.join(',');
-        $.post("",{"ids":ids},(data)=>{
-            console.log(data)
-            if(data==='ok'){
+        $.post("", { "ids": ids }, (data) => {
+            console.log(`post download result: ${data}`)
+            if (data === 'ok') {
                 window.location.reload()
             }
         });
@@ -111,7 +111,6 @@
     })
 </script>
 {% endblock %}
-
 
 {% block status_message %}
  can you see me?

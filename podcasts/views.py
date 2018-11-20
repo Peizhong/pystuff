@@ -1,12 +1,12 @@
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
+from django.urls import reverse
 from django.shortcuts import render
 from django.views import generic
 from django.db.models import Q
 
 from .models import Podcast
-from .tasks import updateFileInfo
 
-#updateFileInfo()
+import os
 
 class IndexView(generic.ListView):
     template_name = 'podcasts/index.html'
@@ -33,3 +33,15 @@ class DownloadedView(generic.ListView):
         """Return the last five published questions."""
         return Podcast.objects.filter(Status=3).order_by('-PublishDate')[:100]
 
+def delete(request):
+    try:
+        title = request.POST['title']
+        podcast = Podcast.objects.get(Title=title)
+        fileDir = os.path.join(os.getcwd(),podcast.Location)
+        if os.path.exists(fileDir):
+            os.remove(fileDir)
+        podcast.Status = 5
+        podcast.save()
+        return HttpResponse("ok")
+    except Exception:
+        return HttpResponse("error")
