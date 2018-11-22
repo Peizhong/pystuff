@@ -39,7 +39,7 @@ def updateFileInfo():
             if p.Status != 4:
                 p.Status = 3
                 p.Location = path
-                p.Link = os.path.join(FILE_SERVER, path)
+                p.MirrorLink = os.path.join(FILE_SERVER, path)
         else:
             # 已经下载过，又删除了
             if p.Status == 3:
@@ -49,10 +49,10 @@ def updateFileInfo():
 @shared_task
 def newDownloadPodcast():
     # 获取最近的列表
-    fetchpocasts = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
+    fetchPodcasts = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
     # 写入数据库
     marked_count = 0
-    for p in fetchpocasts:
+    for p in fetchPodcasts:
         obj, created = Podcast.objects.get_or_create(
             Title=p.Title,
             defaults={
@@ -76,7 +76,7 @@ def newDownloadPodcast():
         try:
             downloadedpath = downloadOnePocast(todo, DOWNLOAD_PATH) 
             todo.Location = downloadedpath
-            todo.Link = os.path.join(FILE_SERVER, downloadedpath)
+            todo.MirrorLink = os.path.join(FILE_SERVER, downloadedpath)
             todo.Remark = None
             todo.Status = 3
         except Exception as e:

@@ -47,19 +47,6 @@
 </div>
 
 <script>
-    $(document).ready(function () {
-        $.ajaxSetup({
-            data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
-        })
-        clearCheckFile()
-        setDownloadBtnStatus()
-    })
-
-    const clearCheckFile = () => {
-        $(".chkDownload-all").prop("checked", false);
-        $(".chkDownload").prop("checked", false);
-    }
-
     const setDownloadBtnStatus = () => {
         const count = $("input:checkbox:checked").length
         $('#btnDownload').attr("disabled", count < 1)
@@ -67,47 +54,61 @@
         $('#btnDownload').text(`Download ${count} file${count > 1 ? 's' : ''}`)
     }
 
-    $(".chkDownload").click(() => {
-        const uncheckCount = $(".chkDownload:not(:checked)").length
-        const checkCount = $(".chkDownload:checked").length
-        $(".chkDownload-all").prop("checked", uncheckCount == 0);
+    const clearCheckFile = () => {
+        $(".chkDownload-all").prop("checked", false);
+        $(".chkDownload").prop("checked", false);
+    }
 
-        setDownloadBtnStatus()
-    })
+    $(function () {
+        $.ajaxSetup({
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
+        })
+        clearCheckFile();
+        setDownloadBtnStatus();
 
-    $(".chkDownload-all").click(() => {
-        const uncheckCount = $(".chkDownload:not(:checked)").length
-        const checkCount = $(".chkDownload:checked").length
-        if (checkCount == 0) {
-            $(".chkDownload").prop("checked", true);
-        }
-        else if (uncheckCount == 0) {
-            $(".chkDownload").prop("checked", false);
-        }
-        else {
-            $(".chkDownload").prop("checked", true);
-        }
+        $(".chkDownload").click(() => {
+            const uncheckCount = $(".chkDownload:not(:checked)").length
+            const checkCount = $(".chkDownload:checked").length
+            $(".chkDownload-all").prop("checked", uncheckCount == 0);
 
-        setDownloadBtnStatus()
-    })
+            setDownloadBtnStatus()
+        })
 
-    $("#btnDownload").click(() => {
-        const id_array = []
-        $(".chkDownload:checked").each(function () {
-            id_array.push($(this).attr('id'));
-        }
-        )
-        const ids = id_array.join(',');
-        $.post("", { "ids": ids }, (data) => {
-            console.log(`post download result: ${data}`)
-            if (data === 'ok') {
-                window.location.reload()
+        $(".chkDownload-all").click(() => {
+            const uncheckCount = $(".chkDownload:not(:checked)").length
+            const checkCount = $(".chkDownload:checked").length
+            if (checkCount == 0) {
+                $(".chkDownload").prop("checked", true);
             }
-        });
-    })
+            else if (uncheckCount == 0) {
+                $(".chkDownload").prop("checked", false);
+            }
+            else {
+                $(".chkDownload").prop("checked", true);
+            }
 
-    $('.popover-dismiss').popover({
-        trigger: 'focus'
+            setDownloadBtnStatus()
+        })
+
+        $("#btnDownload").click(() => {
+            const id_array = []
+            $(".chkDownload:checked").each(function () {
+                id_array.push($(this).attr('id'));
+            }
+            )
+            const ids = id_array.join(',');
+            $.post("", { "ids": ids }, (data) => {
+                console.log(`post download result: ${data}`)
+                if (data === 'ok') {
+                    window.location.reload()
+                }
+            });
+        })
+
+        $('.popover-dismiss').popover({
+            trigger: 'focus'
+        })
+
     })
 </script>
 {% endblock %}

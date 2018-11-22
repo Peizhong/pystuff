@@ -14,7 +14,10 @@ class Podcast(models.Model):
     )
     Title = models.CharField(max_length=200)
     Summary = models.CharField(max_length=2048)
-    Link = models.CharField(max_length=200)
+    # 原始下载地址
+    Link = models.CharField(max_length=512)
+    # 本地服务器镜像
+    MirrorLink = models.CharField(max_length=200)
     PublishDate = models.DateTimeField('date published')
     Status = models.IntegerField(default=0, choices=PODCAST_STATUS)
     Location = models.CharField(max_length=200, null=True, blank=True)

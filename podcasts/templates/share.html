@@ -17,8 +17,11 @@
         }   
         #musicBar {
             position: fixed;
-            margin-top: 4px;
-            right: 4px;
+            bottom: 4px;
+            background-color: rgba(128, 128, 128, 0.8);
+        }        
+        #musicPlayer {
+            width: 100%;
         }
         .footer {
             bottom: 0;
@@ -67,9 +70,6 @@
     </footer>
     <link rel="stylesheet" href="{% static "css/bootstrap.css" %}" />
     <script>
-        $(function () {
-            console.log('hello')
-        })
         $(function () {
             $('[data-toggle="popover"]').popover()
         })
