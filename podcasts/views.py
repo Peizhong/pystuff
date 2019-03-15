@@ -33,6 +33,14 @@ class DownloadedView(generic.ListView):
         """Return the last five published questions."""
         return Podcast.objects.filter(Status=3).order_by('-PublishDate')[:100]
 
+class TestView(generic.ListView):
+    template_name = 'podcasts/test.html'
+    context_object_name = 'latest_podcasts_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Podcast.objects.filter(Status=3).order_by('-PublishDate')[:10]
+
 def delete(request):
     try:
         title = request.POST['title']

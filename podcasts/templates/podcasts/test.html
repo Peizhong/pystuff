@@ -1,0 +1,51 @@
+{% extends 'share.html' %}
+{% block podcasts_list %}
+{% load static %}
+<style type="text/css">
+    #container-fluid {
+        margin: 56px 0;
+    }
+
+    #qqmap {
+        width: 100%;
+        min-height: 800px;
+    }
+</style>
+<script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=QQQBZ-RYMLS-NZDOA-6WUG7-UYTOE-TSFMX"></script>
+<script src="{% static "js/myfunc.js" %}"></script>
+
+<div id="container-fluid">
+    <div class="row">
+        <div id="leftResult" class="col-xl-2">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Vestibulum at eros</li>
+            </ul>
+        </div>
+        <div class="col-xl-8">
+            <div id="qqmap"></div>
+        </div>
+        <div class="col-xl-2">
+            <ul id="rightResult" class="list-group list-group-flush">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Vestibulum at eros</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        takeOverSearch();
+        let mimi = initMap()
+        console.log("document ok")
+    })
+    window.onload = function(){
+        console.log("window ok")
+    };
+    $("li[href='abc']").each(function () {
+        console.log(this.innerText)
+    });
+</script>
+{% endblock %}
