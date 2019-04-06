@@ -12,10 +12,12 @@
     }
 </style>
 <script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=QQQBZ-RYMLS-NZDOA-6WUG7-UYTOE-TSFMX"></script>
+<script src="{% static "js/echarts.js" %}"></script>
 <script src="{% static "js/myfunc.js" %}"></script>
 
 <div id="container-fluid">
     <div class="row">
+        <!--
         <div id="leftResult" class="col-xl-2">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">Cras justo odio</li>
@@ -23,14 +25,33 @@
                 <li class="list-group-item">Vestibulum at eros</li>
             </ul>
         </div>
-        <div class="col-xl-8">
+        -->
+        <div class="col-xl-9">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                    <input type="radio" name="options" id="option1" autocomplete="off" checked> Map
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="option3" autocomplete="off"> Wave
+                </label>
+            </div>
             <div id="qqmap"></div>
+            <canvas id="mycanvas" style="border: 1px solid red;" width="1300px" height="800px" hidden="true">
+                    您的浏览器不支持canvas标签。
+            </canvas>
         </div>
-        <div class="col-xl-2">
+        <div class="col-xl-3">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon03">Upload</button>
+                </div>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="inputGroupFile03" aria-describedby="inputGroupFileAddon03">
+                    <label class="custom-file-label" for="inputGroupFile03">Choose file</label>
+                </div>
+            </div>
             <ul id="rightResult" class="list-group list-group-flush">
-                <li class="list-group-item">Cras justo odio</li>
-                <li class="list-group-item">Dapibus ac facilisis in</li>
-                <li class="list-group-item">Vestibulum at eros</li>
+                <li class="list-group-item">搜索结果...</li>
             </ul>
         </div>
     </div>
@@ -38,6 +59,9 @@
 <script>
     $(function () {
         takeOverSearch();
+        setContentSwitch();
+        initChart();
+        setUploadFile();
         let mimi = initMap()
         console.log("document ok")
     })

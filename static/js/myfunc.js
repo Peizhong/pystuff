@@ -20,7 +20,72 @@ function takeOverSearch(){
     $("#btnSearchAll").click(searchLocation);
 }
 
-// asd
+function setContentSwitch(){
+    $("#option1").change(function(){
+        $("#qqmap").attr("hidden",false);
+        $("#mycanvas").attr("hidden",true);
+    });
+    $("#option3").change(function(){
+        $("#qqmap").attr("hidden",true);
+        $("#mycanvas").attr("hidden",false);
+    });
+}
+
+function drawWave(data){
+    const canvas = document.getElementById("mycanvas");
+    const waves = new Array(1000)
+    
+    for(let i =0; i<1000;i++){
+        waves[i] = Math.sin(i*0.1)*2048+2048
+    }
+    var myChart = echarts.init(document.getElementById('mycanvas'));
+    let i = 0;
+    // 指定图表的配置项和数据
+    var option = {
+        xAxis: {
+            type: 'value',           
+            data: waves.map(function (item) {
+                return i++;
+            })
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            type: 'line',
+            data: waves,
+            smooth: true
+        }]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+}
+
+function setUploadFile(){
+    $("#inputGroupFile03").change(function(){
+        const v = $(this).val()
+        if (v){
+            $("#inputGroupFile03 +").html(v)
+            $('#inputGroupFileAddon03').attr("disabled",false)
+        }
+    })
+    $("#inputGroupFileAddon03").attr("disabled",true)
+    $("#inputGroupFileAddon03").click(function(){
+        const selectedFile = document.getElementById("inputGroupFile03").files[0]
+        var reader = new FileReader();
+        reader.onload = function () {
+            // 当读取完成后回调这个函数,然后此时文件的内容存储到了result中,直接操作即可
+            // console.log(this.result);
+            drawWave(this.result)
+        }
+        reader.readAsText(selectedFile);//读取文件的内容,也可以读取文件的URL
+    })
+}
+
+function initChart() {
+
+}
+
 function initMap() {
     const center = new qq.maps.LatLng(39.936273, 116.44004334);
     const container = $("#qqmap")[0]
@@ -61,18 +126,9 @@ function searchLocation() {
 }
 
 function setResult() {
-    const leftResult = $("#leftResult");
-    leftResult.empty();
     const rightResult = $("#rightResult");
     rightResult.empty();
-    let index = 0;
     markers.map(mk => {
-        if (index++ % 2 == 0) {
-            leftResult.append(`<li class='list-group-item'>${mk.name}</li>`);
-        } else {
-            rightResult.append(`<li class='list-group-item'>${mk.name}</li>`);
-        }
+        rightResult.append(`<li class='list-group-item'>${mk.name}</li>`);
     })
 }
-
-//# sourceMappingURL=myfunc.js.map
