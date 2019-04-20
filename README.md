@@ -1,6 +1,10 @@
 # py
 
 # hello
+pip list --outdated
+pip install --upgrade Django
+pipenv check
+
 python manage.py makemigrations podcasts
 python manage.py migrate
 python manage.py createsuperuser
