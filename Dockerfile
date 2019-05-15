@@ -45,10 +45,7 @@ COPY nginx-default /etc/nginx/conf.d/default.conf
 RUN mkdir /var/run/nginx
 RUN touch /var/run/nginx/nginx.pid
 
-CMD celery -A pystuff worker --pool=solo --purge -l info --detach &
-    celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach &
-    /usr/sbin/nginx &
-    uwsgi --ini uwsgi.ini
+CMD celery -A pystuff worker --pool=solo --purge -l info --detach & celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & /usr/sbin/nginx & uwsgi --ini uwsgi.ini
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
