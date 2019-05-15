@@ -11,8 +11,6 @@ requests = "*"
 redis = "*"
 django-celery-results = "*"
 django = "*"
-uwsgi = "*"
-setuptools = "*"
 
 [dev-packages]
 pylint = "*"
