@@ -11,6 +11,8 @@ feedparser = "*"
 requests = "*"
 redis = "*"
 django-celery-results = "*"
+uwsgi = "*"
+setuptools = "*"
 
 [dev-packages]
 pylint = "*"

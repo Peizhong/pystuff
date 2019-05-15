@@ -21,14 +21,13 @@ RUN apk add --update bash nginx gcc build-base linux-headers
 
 # Using pip:
 #RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
-RUN python3 -m pip install -r requirements.txt
-RUN python3 -m pip install setuptools 
-RUN python3 -m pip install uwsgi
+#RUN python3 -m pip install -r requirements.txt
+#RUN python3 -m pip install setuptools 
+#RUN python3 -m pip install uwsgi
 
 # Using pipenv:
-#RUN python3 -m pip install pipenv
-#RUN pipenv install
-# pipenv install –dev
+RUN python3 -m pip install pipenv
+RUN pipenv install
 
 RUN python manage.py migrate
 #python manage.py createsuperuser
@@ -46,7 +45,10 @@ COPY nginx-default /etc/nginx/conf.d/default.conf
 RUN mkdir /var/run/nginx
 RUN touch /var/run/nginx/nginx.pid
 
-CMD celery -A pystuff worker --pool=solo --purge -l info --detach & celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & /usr/sbin/nginx & uwsgi --ini uwsgi.ini
+CMD celery -A pystuff worker --pool=solo --purge -l info --detach &
+    celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach &
+    /usr/sbin/nginx &
+    uwsgi --ini uwsgi.ini
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
