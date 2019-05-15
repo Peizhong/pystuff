@@ -20,14 +20,14 @@ ADD . /app
 RUN apk add --update bash nginx gcc build-base linux-headers 
 
 # Using pip:
-#RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
-#RUN python3 -m pip install -r requirements.txt
-#RUN python3 -m pip install setuptools 
-#RUN python3 -m pip install uwsgi
+RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install setuptools 
+RUN python3 -m pip install uwsgi
 
 # Using pipenv:
-RUN python3 -m pip install pipenv
-RUN pipenv install
+#RUN python3 -m pip install pipenv
+#RUN pipenv install
 
 RUN python manage.py migrate
 #python manage.py createsuperuser
