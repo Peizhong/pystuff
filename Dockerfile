@@ -17,13 +17,13 @@ ENV ENV="production"
 WORKDIR /app
 ADD . /app
 
-RUN apk add --update bash nginx gcc build-base linux-headers 
+#RUN apt-get nginx 
 
 # Using pip:
 # RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
 RUN python3 -m pip install -r requirements.txt
-RUN python3 -m pip install setuptools 
-RUN python3 -m pip install uwsgi
+#RUN python3 -m pip install setuptools 
+#RUN python3 -m pip install uwsgi
 
 # Using pipenv:
 #RUN python3 -m pip install pipenv
@@ -45,7 +45,8 @@ COPY nginx-default /etc/nginx/conf.d/default.conf
 RUN mkdir /var/run/nginx
 RUN touch /var/run/nginx/nginx.pid
 
-CMD celery -A pystuff worker --pool=solo --purge -l info --detach & celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & /usr/sbin/nginx & uwsgi --ini uwsgi.ini
+#CMD celery -A pystuff worker --pool=solo --purge -l info --detach & celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & /usr/sbin/nginx & uwsgi --ini uwsgi.ini
+CMD celery -A pystuff worker --pool=solo --purge -l info --detach & celery -A pystuff beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --detach & python manage.py runserver
 
 # Using miniconda (make sure to replace 'myenv' w/ your environment name):
 #RUN conda env create -f environment.yml
