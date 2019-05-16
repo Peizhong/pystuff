@@ -4,7 +4,7 @@
 # OS Support also exists for jessie & stretch (slim and full).
 # See https://hub.docker.com/r/library/python/ for all supported Python
 # tags from Docker Hub.
-FROM python:3.7-slim-stretch
+FROM mydjango:v0
 
 # If you prefer miniconda:
 #FROM continuumio/miniconda3
@@ -21,7 +21,7 @@ ADD . /app
 
 # Using pip:
 # RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
-RUN python3 -m pip install -r requirements.txt
+RUN python -m pip install -r requirements.txt
 #RUN python3 -m pip install setuptools 
 #RUN python3 -m pip install uwsgi
 
