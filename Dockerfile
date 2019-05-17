@@ -21,9 +21,9 @@ ADD . /app
 
 # Using pip:
 # RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+#RUN python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple setuptools 
+#RUN python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple uwsgi
 RUN python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
-#RUN python3 -m pip install setuptools 
-RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple uwsgi
 
 # Using pipenv:
 #RUN python3 -m pip install pipenv
