@@ -21,6 +21,7 @@ DOWNLOAD_PATH = query_config('path').get('sysk')
 FILE_SERVER = query_config('file_server')
 ADVERTISING = '<br><br>Learn more about advertising on the HowStuffWorks podcasts at'
 
+#todo add log to elk
 
 @shared_task
 def updateFileInfo():
