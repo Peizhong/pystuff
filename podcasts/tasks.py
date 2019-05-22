@@ -23,6 +23,7 @@ ADVERTISING = '<br><br>Learn more about advertising on the HowStuffWorks podcast
 
 #todo add log to elk
 
+# should not depend on the project
 @shared_task
 def updateFileInfo():
     def file_exists(title: str):
@@ -49,6 +50,8 @@ def updateFileInfo():
 
 @shared_task
 def newDownloadPodcast():
+    # todo: aria2 to speed up
+    print("do newDownloadPodcast")
     # 获取最近的列表
     fetchPodcasts = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
     # 写入数据库

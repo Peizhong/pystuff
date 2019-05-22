@@ -33,3 +33,14 @@ server {
         alias /app/downloads/;
     }
 }
+
+# log
+{
+    "app":"",
+    "type":"",
+    "module:"",
+    "level":"",
+    "message":"",
+    "error":"",
+    "host":""
+}

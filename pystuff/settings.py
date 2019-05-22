@@ -26,7 +26,6 @@ SECRET_KEY = '0en)m82@qr^+(-64v#vj5xg+ye%5=n8tfnl8^_qsjpwe2)de^q'
 # SECURITY WARNING: don't run with debug turned on in production!
 ENV_PROFILE = os.getenv('ENV')
 DEBUG = False if ENV_PROFILE == 'production' else True
-print('DEBUG = %s'%DEBUG)
 
 myutils.self_check()
 

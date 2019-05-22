@@ -22,7 +22,7 @@ def makeDir(path):
 
 def query_config(name: str):
     value = config.get(name)
-    print('{} is {}'.format(name, value))
+    # print('{} is {}'.format(name, value))
     return value
 
 
@@ -61,11 +61,12 @@ def replace_invalid_filename_char(filename, replaced_char='_'):
 
     return valid_filename
 
+checkCount = 0
+
 def self_check():
-    #directory to ensure
+    # directory to ensure
     dirs = query_config('path').values()
     for d in dirs:
         makeDir(d)
-    #os info
-    from .osinfo import tell_me
-    tell_me()
+    # from .osinfo import tell_me
+    # tell_me()

@@ -46,6 +46,3 @@ def tell_me():
         if hasattr(pl, key):
             print(key + bcolors.BOLD + ": " +
                 str(getattr(pl, key)()) + bcolors.ENDC)
-
-if __name__=='__main__':
-    tell_me()
