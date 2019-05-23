@@ -2,8 +2,10 @@
 from __future__ import absolute_import, unicode_literals
 # @shared_task decorator lets you create tasks without having any concrete app instance
 from celery import shared_task
+from celery.utils.log import get_task_logger
 
 import os
+import logging
 import time
 
 from django.db.models import Q
@@ -21,7 +23,8 @@ DOWNLOAD_PATH = query_config('path').get('sysk')
 FILE_SERVER = query_config('file_server')
 ADVERTISING = '<br><br>Learn more about advertising on the HowStuffWorks podcasts at'
 
-#todo add log to elk
+# todo add log to elk
+logger = get_task_logger(__name__)
 
 # should not depend on the project
 @shared_task
@@ -89,3 +92,12 @@ def newDownloadPodcast():
         todo.save()
     print('%d to do' % todownloads.count())
     return 'ok'
+
+@shared_task
+def sayHi():
+    logger.debug("This is a debug log.")
+    logger.info("This is a info log.")
+    logger.warning("This is a warning log.")
+    logger.error("This is a error log.")
+    logger.critical("This is a critical log.")
+    return "ok"
