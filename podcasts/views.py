@@ -7,6 +7,10 @@ from django.db.models import Q
 from .models import Podcast
 
 import os
+import logging
+
+logger = logging.getLogger('pystuff')
+logger.info("This is a info log.")
 
 class IndexView(generic.ListView):
     template_name = 'podcasts/index.html'

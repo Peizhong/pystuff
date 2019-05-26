@@ -44,3 +44,26 @@ server {
     "error":"",
     "host":""
 }
+
+# logstash
+input {
+    beats {
+        port => "5044"
+    }
+}
+# The filter part of this file is commented out to indicate that it is
+# optional.
+filter {
+    grok {
+        match => { "message" =>"\[%{TIMESTAMP_ISO8601:timestamp}: %{LOGLEVEL:level}\/%{DATA:process}\](?<host>) (?<data>(.|\r|\n)*)"}
+    }
+    mutate {
+        rename => { "[host][name]" => "host" }
+    }
+}
+output {
+#    stdout { codec => rubydebug }
+    elasticsearch {
+        hosts => [ "193.112.41.28:9200" ]
+    }
+}
