@@ -1,4 +1,6 @@
 import os
+import logging
+import subprocess
 import sys
 import feedparser
 import collections
@@ -9,6 +11,7 @@ import json
 
 from myutils import query_config, replace_invalid_filename_char
 
+logger = logging.getLogger('pystuff')
 
 class Podcast:
     def __init__(self,title,summary,link,publishdate,downloadresult):
@@ -23,6 +26,7 @@ class Podcast:
 
 def fetchRss(rss):
     feeds = []
+    logger.info("feedparser from %s",rss)
     source = feedparser.parse(rss)
     for s in source.entries:
         link = ''
@@ -76,6 +80,16 @@ def downloadOnePocast(rss, localpath):
         for chunk in r.iter_content(chunk_size=4096):
              if chunk:
                 f.write(chunk)
+    result = filepath
+    return result
+
+def downloadOnePocastUsingAria2(rss, localpath):
+    '''return file path, may excepetion'''
+    result = ''
+    encodedName = replace_invalid_filename_char(rss.Title)
+    filepath = '%s/%s.mp3' % (localpath, encodedName)
+    ret = subprocess.call("aria2c","-h")
+    logger.info(ret)
     result = filepath
     return result
 

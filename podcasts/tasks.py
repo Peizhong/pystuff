@@ -14,8 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import Podcast
 
 from myutils import query_config, replace_invalid_filename_char
-from myutils.sysk import Podcast as rssPocast
-from myutils.sysk import fetchRss, downloadOnePocast, checkAndDownloadPodcasts
+from myutils.sysk import fetchRss, downloadOnePocastUsingAria2
 
 
 MAX_AUTO_DOWNLOAD = 3
@@ -27,8 +26,9 @@ ADVERTISING = '<br><br>Learn more about advertising on the HowStuffWorks podcast
 logger = get_task_logger(__name__)
 
 # should not depend on the project
-@shared_task
-def updateFileInfo():
+
+def scanDownloadPath():
+    logger.info("scan local path")
     def file_exists(title: str):
         encodedName = replace_invalid_filename_char(title)
         filepath = '%s/%s.mp3' % (DOWNLOAD_PATH, encodedName)
@@ -52,13 +52,11 @@ def updateFileInfo():
         p.save()
 
 @shared_task
-def newDownloadPodcast():
-    # todo: aria2 to speed up
-    print("do newDownloadPodcast")
+def updatePodcastList():
+    logger.info("update podcast list start")
     # 获取最近的列表
     fetchPodcasts = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
-    # 写入数据库
-    marked_count = 0
+    logger.info("found %d new podcasts",len(fetchPodcasts))
     for p in fetchPodcasts:
         obj, created = Podcast.objects.get_or_create(
             Title=p.Title,
@@ -67,21 +65,22 @@ def newDownloadPodcast():
                 'Link': p.Link,
                 'PublishDate': p.PublishDate,
                 # 筛选sysk select 的数据，标记下载
-                'Status': 1 if ('SYSK Selects' in p.Title and marked_count < MAX_AUTO_DOWNLOAD) else 0
+                # 'Status': 1 if ('SYSK Selects' in p.Title and marked_count < MAX_AUTO_DOWNLOAD) else 0
             }
         )
-        if obj.Status == 1:
-            marked_count += 1
+    logger.info("update podcast's database completed")
+    scanDownloadPath()
 
-    updateFileInfo()
-
+@shared_task
+def downloadNewPodcast():
+    # todo: aria2 to speed up
     #重新下载已标记和错误的文件
     todownloads = Podcast.objects.filter(Q(Status=1) | Q(Status=4))
     for todo in todownloads:
         todo.Status = 2
         todo.save()
         try:
-            downloadedpath = downloadOnePocast(todo, DOWNLOAD_PATH) 
+            downloadedpath = downloadOnePocastUsingAria2(todo, DOWNLOAD_PATH) 
             todo.Location = downloadedpath
             todo.MirrorLink = os.path.join(FILE_SERVER, downloadedpath)
             todo.Remark = None
@@ -92,12 +91,3 @@ def newDownloadPodcast():
         todo.save()
     print('%d to do' % todownloads.count())
     return 'ok'
-
-@shared_task
-def sayHi():
-    logger.debug("This is a debug log.")
-    logger.info("This is a info log.")
-    logger.warning("This is a warning log.")
-    logger.error("This is a error log.")
-    logger.critical("This is a critical log.")
-    return "ok"
