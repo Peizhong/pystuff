@@ -58,7 +58,7 @@ def updatePodcastList():
     fetchPodcasts = fetchRss('https://feeds.megaphone.fm/stuffyoushouldknow')
     logger.info("found %d new podcasts",len(fetchPodcasts))
     for p in fetchPodcasts:
-        obj, created = Podcast.objects.get_or_create(
+        obj, created = Podcast.objects.update_or_create(
             Title=p.Title,
             defaults={
                 'Summary': p.Summary if (ADVERTISING not in p.Summary) else (p.Summary[:(p.Summary.index(ADVERTISING))]),

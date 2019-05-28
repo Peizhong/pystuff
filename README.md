@@ -55,10 +55,15 @@ input {
 # optional.
 filter {
     grok {
-        match => { "message" =>"\[%{TIMESTAMP_ISO8601:timestamp}: %{LOGLEVEL:level}\/%{DATA:process}\](?<host>) (?<data>(.|\r|\n)*)"}
+        match => { "message" =>"\[%{TIMESTAMP_ISO8601:logdate}: %{LOGLEVEL:level}\/%{DATA:process}\](?<host>) (?<data>(.|\r|\n)*)"}
+    }
+    date {
+        match => ["logdate", "yyyy-MM-dd HH:mm:ss,SSS"]
+        target => "@timestamp"  ## 默认target就是"@timestamp
     }
     mutate {
         rename => { "[host][name]" => "host" }
+        remove_field => ["logdate"]
     }
 }
 output {
