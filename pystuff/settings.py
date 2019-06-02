@@ -146,33 +146,25 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'log/django.log',
-            'maxBytes': 1024 * 1024 * 50,
-            'formatter': 'standard'
-        },
-        'pystuff': {
+        'logstash': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'log/pystuff.log',
-            'maxBytes': 1024 * 1024 * 50,
-            'formatter': 'standard'
+            'class': 'logstash.TCPLogstashHandler',
+            'host': '193.112.41.28',
+            'port': 5044, # Default value: 5959
+            'version': 1, # Version of logstash event schema. Default value: 0 (for backward compatibility of the library)
+            'message_type': 'django',  # 'type' field in logstash message. Default value: 'logstash'.
+            'fqdn': False, # Fully qualified domain name. Default value: false.
+            'tags': ['django.request'], # list of tags. Default: None.
         },
     },
     'loggers': {
         'pystuff': {
-            'handlers': ['pystuff'],
+            'handlers': ['logstash'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'django': {
-            'handlers': ['file'],
+            'handlers': ['logstash'],
             'level': 'WARNING',
             'propagate': False
             ,

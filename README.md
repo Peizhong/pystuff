@@ -46,9 +46,14 @@ server {
 }
 
 # logstash
+# config/pipelines.yml -> /usr/share/logstash/pipeline/logstash.conf
 input {
     beats {
         port => "5044"
+    }    
+    tcp {
+        port => "5959"
+        codec => json
     }
 }
 # The filter part of this file is commented out to indicate that it is

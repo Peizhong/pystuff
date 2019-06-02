@@ -4,6 +4,7 @@ import subprocess
 import sys
 import feedparser
 import collections
+import threading
 from atexit import register
 import time
 import requests
@@ -26,20 +27,26 @@ class Podcast:
 
 def fetchRss(rss):
     feeds = []
-    logger.info("feedparser from %s",rss)
-    source = feedparser.parse(rss)
-    for s in source.entries:
-        link = ''
-        for l in s.links:
-            if (l['type'] == 'audio/mpeg'):
-                link = l['href']
-                break
-        if not link:
-            continue
-        #feeds.append(Pocast(s.title, s.subtitle, link, time.strftime("%Y-%m-%d %H:%M:%S",s.published_parsed,''))
-        feeds.append(Podcast(s.title, s.summary, link,s.published_parsed,''))
-    # byd = sorted(feeds, key=lambda s: s['UpdateTime'], reverse=True)
-    # return byd[:5]
+    def mightTimeout():
+        logger.info("feedparser from %s",rss)
+        source = feedparser.parse(rss)
+        for s in source.entries:
+            link = ''
+            for l in s.links:
+                if (l['type'] == 'audio/mpeg'):
+                    link = l['href']
+                    break
+            if not link:
+                continue
+            #feeds.append(Pocast(s.title, s.subtitle, link, time.strftime("%Y-%m-%d %H:%M:%S",s.published_parsed,''))
+            feeds.append(Podcast(s.title, s.summary, link,s.published_parsed,''))
+        logger.info("complete feedparser within 10s")
+    t = threading.Thread(target=mightTimeout)
+    t.setDaemon(True)
+    t.start()
+    logger.info("waiting....")
+    t.join(20)
+    logger.info("whatever....")
     return feeds[:100]
 
 
@@ -88,7 +95,8 @@ def downloadOnePocastUsingAria2(rss, localpath):
     result = ''
     encodedName = replace_invalid_filename_char(rss.Title)
     filepath = '%s/%s.mp3' % (localpath, encodedName)
-    ret = subprocess.call("aria2c","-h")
+    logger.info("user aria2 downloading: %s"%rss.Link)
+    ret = subprocess.call(["aria2c","-o",filepath,rss.Link])
     logger.info(ret)
     result = filepath
     return result
