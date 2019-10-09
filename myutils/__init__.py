@@ -61,8 +61,6 @@ def replace_invalid_filename_char(filename, replaced_char='_'):
 
     return valid_filename
 
-checkCount = 0
-
 def self_check():
     # directory to ensure
     dirs = query_config('path').values()

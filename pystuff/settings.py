@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'podcasts',
+    'money',
     'django_celery_beat',
     'django_celery_results',
 ]
@@ -132,42 +134,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '[{asctime}: {levelname}/{module}] {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'logstash': {
-            'level': 'DEBUG',
-            'class': 'logstash.TCPLogstashHandler',
-            'host': '193.112.41.28',
-            'port': 5044, # Default value: 5959
-            'version': 1, # Version of logstash event schema. Default value: 0 (for backward compatibility of the library)
-            'message_type': 'django',  # 'type' field in logstash message. Default value: 'logstash'.
-            'fqdn': False, # Fully qualified domain name. Default value: false.
-            'tags': ['django.request'], # list of tags. Default: None.
-        },
-    },
-    'loggers': {
-        'pystuff': {
-            'handlers': ['logstash'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'django': {
-            'handlers': ['logstash'],
-            'level': 'WARNING',
-            'propagate': False
-            ,
-        }
-    },
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }

@@ -1,8 +1,8 @@
 config = {
     'hosts': ['localhost', '193.112.41.28'],
     'file_server': 'http://193.112.41.28/',
+    # file to ensure
     'path': {
-        'log': 'log',
         'sysk': 'downloads/sysk/'
     },
     'celery_broker': 'pyamqp://193.112.41.28//',
