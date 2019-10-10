@@ -8,6 +8,7 @@ class Currency(models.Model):
     country = models.CharField(max_length=200)
     sign = models.CharField(max_length=10)
     rate = models.FloatField(default=1)
+    enabled = models.BooleanField(default=True)
     update_time = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -24,6 +25,7 @@ class Account(models.Model):
     account_type = models.IntegerField(default=0, choices=ACCOUNT_TYPE)
     currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING)
     open_balnace = models.FloatField(default=0)
+    enabled = models.BooleanField(default=True)
     remark = models.CharField(max_length=2048, null=True, blank=True)
     
     def __str__(self):
