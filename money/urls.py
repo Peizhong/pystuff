@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework import routers
 from . import views
 
@@ -9,4 +10,8 @@ router.register(r'projects', views.ProjectViewSet)
 router.register(r'transactions', views.TransactionViewSet)
 
 app_name = 'money'
-urlpatterns = router.urls
+
+urlpatterns = [
+    path('update_currency/', views.update_currency, name='update_currency')
+]
+urlpatterns.extend(router.urls)

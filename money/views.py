@@ -1,16 +1,27 @@
+from django.http import HttpResponse
+from django.db import transaction
 from rest_framework import viewsets
 from .models import Currency,Account,Catalog,Project,Transaction
 from .serializers import CurrencySerializer,AccountSerializer,CatalogSerializer,ProjectSerializer,TransactionSerializer
-from myutils.currency import update_currency
+from myutils.currency import get_currency
 
 # Create your views here.
 
-def init_currency():
-    currency = update_currency()
-    l = list()
-    for c in currency:
-        l.append(Currency(country=c.code,rate=c.rate))
-    Currency.objects.bulk_create(l)
+@transaction.atomic
+def update_currency(request):
+    currencies = get_currency()
+    db_currencies = list(Currency.objects.all())
+    for c in currencies:
+        cur = Currency()
+        for d in db_currencies:
+            if d.country == c.country:
+                cur = d
+                break
+        cur.country = c.country
+        cur.sign = c.sign
+        cur.rate = c.rate
+        cur.save()
+    return HttpResponse('ok')
     
 class CurrencyViewSet(viewsets.ModelViewSet):
     queryset = Currency.objects.all()

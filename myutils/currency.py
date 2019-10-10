@@ -2,12 +2,12 @@ from collections import namedtuple
 import json
 import requests
 
-Currency = namedtuple('currency',['code','rate'])
+Currency = namedtuple('currency',['country','sign','rate'])
 
 CURRENCY_LINK = 'https://www.mycurrency.net/US.json'
 FILE_PATH = 'us.json'
 
-def update_currency():
+def get_currency():
     print('downloading from: '+CURRENCY_LINK)
     if not True:
         r = requests.get(CURRENCY_LINK, stream=True) # create HTTP response object
@@ -17,9 +17,8 @@ def update_currency():
                     f.write(chunk)
     with open(FILE_PATH,'r') as f:
         cr = json.load(f)
-        d = [Currency(c['code'],c['rate']) for c in cr['rates'] ]
-        print(d)
+        d = [Currency(c['name'],c['currency_code'],c['rate']) for c in cr['rates'] ]
         return d
 
 if(__name__ == '__main__'):
-    update_currency()
+    get_currency()
