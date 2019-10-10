@@ -11,6 +11,7 @@ requests = "*"
 django-celery-results = "*"
 django = "*"
 djangorestframework = "*"
+mysqlclient = "*"
 
 [dev-packages]
 pylint = "*"

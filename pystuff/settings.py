@@ -27,10 +27,9 @@ SECRET_KEY = '0en)m82@qr^+(-64v#vj5xg+ye%5=n8tfnl8^_qsjpwe2)de^q'
 ENV_PROFILE = os.getenv('ENV')
 DEBUG = False if ENV_PROFILE == 'production' else True
 
-myutils.self_check()
+# myutils.self_check()
 
 ALLOWED_HOSTS = myutils.query_config('hosts')
-
 
 # Application definition
 
@@ -84,8 +83,12 @@ WSGI_APPLICATION = 'pystuff.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'dev',
+        'USER': 'root',
+        'PASSWORD': '******',
+        'HOST': '******',
+        'PORT': '3306',
     }
 }
 
@@ -135,6 +138,9 @@ STATICFILES_DIRS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
