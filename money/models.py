@@ -6,6 +6,7 @@ from django.db import models
 
 class Currency(models.Model):
     country = models.CharField(max_length=200)
+    country_zh = models.CharField(max_length=200, null=True, blank=True)
     sign = models.CharField(max_length=10)
     rate = models.FloatField(default=1)
     enabled = models.BooleanField(default=True)
@@ -17,9 +18,9 @@ class Currency(models.Model):
 class Account(models.Model):
     ACCOUNT_TYPE = (
         (0, 'None'),
-        (1, 'Cash'),
-        (3, 'Debit'),
-        (5, 'Credit'),
+        (1, '现金'),
+        (3, '借记卡'),
+        (5, '信用卡'),
     )
     account_name = models.CharField(max_length=200)
     account_type = models.IntegerField(default=0, choices=ACCOUNT_TYPE)
@@ -29,7 +30,13 @@ class Account(models.Model):
     remark = models.CharField(max_length=2048, null=True, blank=True)
     
     def __str__(self):
-        return self.account_name
+        return "%s_%s"%(self.get_account_type_display(),self.account_name)
+
+class CreditAccount(Account):
+    credit_limit = models.FloatField(default=0)
+    billing_day = models.IntegerField(default=0)
+    billing_cycle = models.IntegerField(default=0)
+    include_today = models.BooleanField(default=False)
 
 class Catalog(models.Model):
     catalog_name = models.CharField(max_length=200)
@@ -64,3 +71,6 @@ class Transaction(models.Model):
     catalog = models.ForeignKey(Catalog, on_delete=models.DO_NOTHING, null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.DO_NOTHING, null=True, blank=True)
     remark = models.CharField(max_length=2048, null=True, blank=True)
+
+    def __str__(self):
+        return '%s/%s/%s %s'%(self.date_time.year,self.date_time.month,self.date_time.day,self.remark)

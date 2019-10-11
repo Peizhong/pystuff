@@ -2,7 +2,7 @@ from collections import namedtuple
 import json
 import requests
 
-Currency = namedtuple('currency',['country','sign','rate'])
+Currency = namedtuple('currency',['country','country_zh','sign','rate'])
 
 CURRENCY_LINK = 'https://www.mycurrency.net/US.json'
 FILE_PATH = 'us.json'
@@ -17,7 +17,7 @@ def get_currency():
                     f.write(chunk)
     with open(FILE_PATH,'r') as f:
         cr = json.load(f)
-        d = [Currency(c['name'],c['currency_code'],c['rate']) for c in cr['rates'] ]
+        d = [Currency(c['name'],c['name_zh'],c['currency_code'],c['rate']) for c in cr['rates'] ]
         return d
 
 if(__name__ == '__main__'):
