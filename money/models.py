@@ -54,6 +54,9 @@ class Project(models.Model):
         return self.project_name
 
 class Transaction(models.Model):
+    class Meta:
+        ordering = ['-date_time']
+    
     TRANS_TYPE = (
         (0, 'None'),
         (1, '支出'),
