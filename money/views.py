@@ -1,6 +1,6 @@
 import datetime
 from django.http import HttpResponse,JsonResponse
-from django.db import transaction
+from django.db import connection,transaction
 from rest_framework import viewsets
 from .models import Currency,Account,CreditAccount,Catalog,Project,Transaction
 from .serializers import CurrencySerializer,AccountSerializer,CreditAccountSerializer,CatalogSerializer,ProjectSerializer,TransactionSerializer
@@ -25,9 +25,19 @@ def update_currency(request):
         cur.save()
     return HttpResponse('ok')
 
-def account_summary(request,account_id):
+def account_summary(request):
     # 计算余额
-    return HttpResponse('todo')
+    sql = """select id,
+       account_name,
+       open_balnace
+       + ifnull((select sum(in_amt) from money_transaction where money_transaction.in_account_id = money_account.id),0)
+       - ifnull((select sum(out_amt) from money_transaction where money_transaction.out_account_id = money_account.id),0) balance
+    from money_account where enabled = 1 order by id"""
+    with connection.cursor() as c:
+        c.execute(sql)
+        columns = [col[0] for col in c.description]
+        r = [dict(zip(columns, row)) for row in c.fetchall()]
+        return JsonResponse({"data":r})
 
 def transactions_summary(request):
     date_start = request.GET.get('date_start')
