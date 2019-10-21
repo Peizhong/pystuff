@@ -30,8 +30,8 @@ def account_summary(request):
     sql = """select id,
        account_name,
        open_balnace
-       + ifnull((select sum(in_amt) from money_transaction where money_transaction.in_account_id = money_account.id),0)
-       - ifnull((select sum(out_amt) from money_transaction where money_transaction.out_account_id = money_account.id),0) balance
+       + ifnull((select sum(in_amt*trans_rate) from money_transaction where money_transaction.in_account_id = money_account.id),0)
+       - ifnull((select sum(out_amt*trans_rate) from money_transaction where money_transaction.out_account_id = money_account.id),0) balance
     from money_account where enabled = 1 order by id"""
     with connection.cursor() as c:
         c.execute(sql)

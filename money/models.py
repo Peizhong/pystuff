@@ -68,6 +68,7 @@ class Transaction(models.Model):
     out_account = models.ForeignKey(Account, on_delete=models.DO_NOTHING,related_name='out_account_id', null=True, blank=True)
     in_account = models.ForeignKey(Account, on_delete=models.DO_NOTHING,related_name='id_account_id', null=True, blank=True)
     out_amt = models.FloatField(default=0)
+    currency = models.ForeignKey(Currency,on_delete=models.DO_NOTHING)
     in_amt = models.FloatField(default=0)
     trans_rate = models.FloatField(default=1)
     date_time = models.DateTimeField()
