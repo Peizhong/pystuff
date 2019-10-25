@@ -14,7 +14,9 @@ app_name = 'money'
 
 urlpatterns = [
     path('update_currency/', views.update_currency, name='update_currency'),
-    path('account_summary/', views.account_summary, name='account_summary'),
-    path('transactions_summary/', views.transactions_summary, name='transactions_summary')
+    path('accounts/', views.account_summary, name='account_summary'),
+    path('accounts/<int:account_id>/', views.account_detail, name='account_detail'),
+    path('accounts/<int:account_id>/adjust_balance/', views.adjust_balance, name='adjust_balance'),
+    path('transactions/', views.transactions_summary, name='transactions_summary'),
 ]
 urlpatterns.extend(router.urls)

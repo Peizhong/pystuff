@@ -1,56 +1,39 @@
-import datetime
+import json
 from django.http import HttpResponse,JsonResponse
-from django.db import connection,transaction
 from rest_framework import viewsets
 from .models import Currency,Account,CreditAccount,Catalog,Project,Transaction
 from .serializers import CurrencySerializer,AccountSerializer,CreditAccountSerializer,CatalogSerializer,ProjectSerializer,TransactionSerializer
-from myutils.currency import get_currency
+
+from . import services
 
 # Create your views here.
 
-@transaction.atomic
+def chnJson(data):
+    return JsonResponse({"data":data}, json_dumps_params={'ensure_ascii':False})
+
 def update_currency(request):
-    currencies = get_currency()
-    db_currencies = list(Currency.objects.all())
-    for c in currencies:
-        cur = Currency()
-        for d in db_currencies:
-            if d.country == c.country:
-                cur = d
-                break
-        cur.country = c.country
-        cur.country_zh = c.country_zh
-        cur.sign = c.sign
-        cur.rate = c.rate
-        cur.save()
+    services.update_currency()
     return HttpResponse('ok')
 
 def account_summary(request):
-    # 计算余额
-    sql = """select id,
-       account_name,
-       open_balnace
-       + ifnull((select sum(in_amt*trans_rate) from money_transaction where money_transaction.in_account_id = money_account.id),0)
-       - ifnull((select sum(out_amt*trans_rate) from money_transaction where money_transaction.out_account_id = money_account.id),0) balance
-    from money_account where enabled = 1 order by id"""
-    with connection.cursor() as c:
-        c.execute(sql)
-        columns = [col[0] for col in c.description]
-        r = [dict(zip(columns, row)) for row in c.fetchall()]
-        return JsonResponse({"data":r})
+    r = services.account_summary()
+    return chnJson(r)
+
+def account_detail(request,account_id):
+    r = services.account_detail(account_id)
+    return chnJson(r)
+
+def adjust_balance(request,account_id):
+    req = json.loads(request.body)
+    new_balance = req['new_balance']
+    services.adjust_balance(account_id,new_balance)
+    return HttpResponse('ok')
 
 def transactions_summary(request):
     date_start = request.GET.get('date_start')
     date_end = request.GET.get('date_end')
     trans_type = request.GET.get('trans_type')
-    query = Transaction.objects
-    if date_start:
-        p_date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
-        query = query.filter(date_time__gte=p_date_start)
-        if date_end:
-            p_date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
-            query = query.filter(date_time__lte=p_date_end)
-    data = list(query.all())
+    data = services.transactions_summary(date_start,date_end,trans_type)
     return HttpResponse('todo')
 
 class CurrencyViewSet(viewsets.ModelViewSet):

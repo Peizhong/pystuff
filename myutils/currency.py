@@ -9,7 +9,7 @@ FILE_PATH = 'us.json'
 
 def get_currency():
     print('downloading from: '+CURRENCY_LINK)
-    if not True:
+    if 1==2:
         r = requests.get(CURRENCY_LINK, stream=True) # create HTTP response object
         with open(FILE_PATH,'wb') as f:
             for chunk in r.iter_content(chunk_size=4096):

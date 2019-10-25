@@ -1,0 +1,19 @@
+###
+http://localhost:8000/money_api/accounts
+
+###
+http://localhost:8000/money_api/accounts/7/
+
+###
+POST http://localhost:8000/money_api/accounts/7/adjust_balance/
+Content-type: "application/json"
+
+{
+    "new_balance": -300
+}
+
+###
+http://localhost:8000/money_api/transactions/
+
+###
+http://localhost:8000/money_api/update_currency/
