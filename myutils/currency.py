@@ -5,7 +5,7 @@ import requests
 Currency = namedtuple('currency',['country','country_zh','sign','rate'])
 
 CURRENCY_LINK = 'https://www.mycurrency.net/US.json'
-FILE_PATH = 'us.json'
+FILE_PATH = 'private/us.json'
 
 def get_currency():
     print('downloading from: '+CURRENCY_LINK)

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'podcasts',
     'money',
+    'days',
     'django_celery_beat',
     'django_celery_results',
 ]
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'pystuff.middlewares.IPGeoMiddleware'
 ]
 
 ROOT_URLCONF = 'pystuff.urls'
@@ -140,13 +142,35 @@ STATICFILES_DIRS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '[%(levelname)s] [%(asctime)s] %(message)s',
+        },
+    },
     'handlers': {
         'console':{
             'level':'DEBUG',
             'class':'logging.StreamHandler',
         },
+        'file':{
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'default.log',
+            'maxBytes': 1024*5,
+            'level': 'DEBUG',
+            'formatter': 'simple',
+        }
     },
     'loggers': {
+        'django.middlewares': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'django.services': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
         'django.db.backends': {
             'handlers': ['console'],
             'propagate': True,
@@ -162,3 +186,5 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
+GEOIP_PATH = 'private'
