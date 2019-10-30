@@ -16,8 +16,8 @@ def get_geo(ip):
     g = GeoIP2()
     try:
         city = g.city(ip)
-        name = city['name']
-        return city
+        vistor = "%s is from %s,%s"%(ip,city['city'],city['country_name'])
+        return vistor
     except AddressNotFoundError:
         return "AddressNotFound"
     return ""
@@ -32,8 +32,7 @@ class IPGeoMiddleware:
         # Code to be executed for each request before
         # the view (and later middleware) are called.
         ip = get_ip(request)
-        city = get_geo(ip)
-        vistor = "%s is from %s"%(ip,city)
+        vistor = get_geo(ip)
         logger.debug(vistor)
         response = self.get_response(request)
 

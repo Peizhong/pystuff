@@ -12,6 +12,7 @@ django-celery-results = "*"
 django = "*"
 djangorestframework = "*"
 mysqlclient = "*"
+geoip2 = "*"
 
 [dev-packages]
 pylint = "*"
