@@ -1,7 +1,7 @@
 from django.contrib import admin
+from .models import Currency,Account,CreditAccount,Catalog,Project,Transaction
 
 # Register your models here.
-from .models import Currency,Account,CreditAccount,Catalog,Project,Transaction
 
 admin.site.register(Currency)
 admin.site.register(Account)
