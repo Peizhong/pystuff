@@ -1,15 +1,15 @@
 ###
-http://localhost:8000/money_api/accounts
+http://193.112.41.28:8090/money_api/accounts/
 
 ###
-http://localhost:8000/money_api/accounts/7/
+http://193.112.41.28:8090/money_api/accounts/7/
 
 ###
-POST http://localhost:8000/money_api/accounts/7/adjust_balance/
+POST http://193.112.41.28:8090/money_api/accounts/5/adjust_balance/
 Content-type: "application/json"
 
 {
-    "new_balance": -300
+    "new_balance": -5326
 }
 
 ###
