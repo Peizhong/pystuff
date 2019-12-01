@@ -16,8 +16,8 @@ def account_summary():
         columns = [col[0] for col in c.description]
         r = [dict(zip(columns, row)) for row in c.fetchall()]
         sum = 0
-        for d in range(r):
-            sum += d.balance
+        for d in r:
+            sum += d["balance"]
         return {"NetWorth":sum, "Detail":r}
 
 def account_detail(account_id):
