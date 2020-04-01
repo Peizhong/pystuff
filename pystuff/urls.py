@@ -22,4 +22,5 @@ urlpatterns = [
     path('money_api/', include('money.urls')),
     path('days/', include('days.urls')),
     path('podcasts/', include('podcasts.urls')),
+    path('dict/', include('dict.urls')),
 ]
