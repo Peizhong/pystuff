@@ -40,12 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'podcasts',
-    'money',
-    'days',
-    'django_celery_beat',
-    'django_celery_results',
+    'podcasts'
 ]
 
 MIDDLEWARE = [
@@ -55,8 +50,7 @@ MIDDLEWARE = [
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'pystuff.middlewares.IPGeoMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
 ROOT_URLCONF = 'pystuff.urls'
@@ -85,7 +79,7 @@ WSGI_APPLICATION = 'pystuff.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'dev',
         'USER': 'root',
         'PASSWORD': '',
@@ -177,14 +171,6 @@ LOGGING = {
             'level':'DEBUG',
         },
     }
-}
-
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
 }
 
 GEOIP_PATH = 'private'
